@@ -166,6 +166,59 @@ const Output = ({
     [overallEvaluation?.summary],
   );
 
+
+    let evalObj: any = {};
+    codeEvaluation.forEach(({ evaluations }: any) => {
+      evalObj[evaluations[0]?.hash] = evaluations[0]?.hash_url;
+    });
+
+
+      Object.keys(evalObj).forEach((key) => {
+        if (opportunities?.includes(key.slice(0, 7))) {
+          opportunities = opportunities.replace(
+            key.slice(0, 7),
+            `[${key.slice(0, 7)}](${evalObj[key]})`,
+          );
+
+          opportunities = opportunities.replace(
+            key.slice(0, 6),
+            `[${key.slice(0, 7)}](${evalObj[key]})`,
+          );
+        }
+
+
+
+    }
+
+
+      let updatedDescription = opp?.description;
+
+
+        if (updatedDescription?.includes(key.slice(0, 7))) {
+          updatedDescription = updatedDescription.replace(
+            key.slice(0, 7),
+            `<a target="_blank" contenteditable="false" style="cursor: pointer; background-color: #C9DBE9; width: fit-content; padding: 0rem 0.75rem; border-radius: 1rem; margin: auto; font-size: 0.875rem; color: #1A2636;" href=${
+              evalObj[key]
+            }>${key.slice(0, 7)}</a>`,
+          );
+
+          updatedDescription = updatedDescription.replace(
+            key.slice(0, 6),
+            `<a target="_blank" contenteditable="false" style="cursor: pointer; background-color: #C9DBE9; width: fit-content; padding: 0rem 0.75rem; border-radius: 1rem; margin: auto; font-size: 0.875rem; color: #1A2636;" href=${
+              evalObj[key]
+            }>${key.slice(0, 7)}</a>`,
+          );
+        }
+
+
+
+        ...opp,
+        description: updatedDescription,
+      };
+    });
+    return newOpp;
+  };
+
   return (
     <div>
       <div
@@ -180,8 +233,7 @@ const Output = ({
           editorRef={editorRef}
           markdown={
             overallEvaluation?.summary?.length > 0
-// !block(1:1) 0,3,red
-              ? overallEvaluation?.summary
+
               : "No summary found"
           }
           readOnly={!editMode}
@@ -197,16 +249,20 @@ const Output = ({
         }  justify-between gap-4 my-4`}
       >
         <Strength
-// !block(1:1) 0,3,red
-          strengths={overallEvaluation?.evaluation?.strengths}
+
+            overallEvaluation?.evaluation?.strengths,
+          )}
           editMode={editMode}
           onDataChange={(index: number, k: string, v: string) =>
             onDataChange("strengths", index, k, v)
           }
         />
         <Opportunity
-// !block(1:1) 0,3,red
-          opportunities={overallEvaluation?.evaluation?.opportunities}
+// !focus(1:2)
+// !block(1:2) 0,3,teal
+          opportunities={replaceHashWithURL(
+            overallEvaluation?.evaluation?.opportunities,
+          )}
           editMode={editMode}
           onDataChange={(index: number, k: string, v: string) =>
             onDataChange("opportunities", index, k, v)
@@ -214,79 +270,78 @@ const Output = ({
         />
       </div>
       {codeEvaluation?.length > 0 &&
-// !block(1:3) 0,3,red
-        codeEvaluation?.flatMap(({ evaluations }: any, index: any) => {
-          return !evaluations?.length ? (
-            []
-          ) : (
-// !block(1:18) 0,3,red
-            <div key={evaluations[0]?.hash}>
-              <Artifact
-                editMode={editMode}
-                tags={evaluations[0]?.tags}
-                message={evaluations[0]?.artifact_summary_string}
-                value={evaluations[0]?.hash}
-                repoName={evaluations[0]?.repo_name}
-                title={
-                  <span className="text-[#518AB9] font-semibold text-[17px]">
-                    Commit{" "}
-                    <span
-                      contentEditable={editMode}
-                      className="outline-none"
-                      onBlur={(e) =>
-                        onArtifactChange(index, "hash", e.target.innerText)
-                      }
-                    >
-                      {evaluations[0]?.hash?.slice(0, 7)}
+        codeEvaluation
+          .flatMap((i: any, mainIndex: number) =>
+            !i.evaluations?.length ? [] : { ...i, mainIndex },
+          )
+          ?.map(({ evaluations, mainIndex }: any, index: any) => {
+            return (
+              <div key={evaluations[0]?.hash}>
+                <Artifact
+                  editMode={editMode}
+                  tags={evaluations[0]?.tags}
+                  message={evaluations[0]?.artifact_summary_string}
+                  value={evaluations[0]?.hash}
+                  repoName={evaluations[0]?.repo_name}
+                  title={
+                    <span className="text-[#518AB9] font-semibold text-[17px]">
+                      Commit{" "}
+                      <span
+                        contentEditable={editMode}
+                        className="outline-none"
+                        onBlur={(e) =>
+                          onArtifactChange(
+                            mainIndex,
+                            "hash",
+                            e.target.innerText,
+                          )
+                        }
+                      >
+                        {evaluations[0]?.hash?.slice(0, 7)}
+                      </span>
+                      :{" "}
+                      <span
+                        contentEditable={editMode}
+                        className="outline-none"
+                        onBlur={(e) =>
+                          onArtifactChange(
+                            mainIndex,
+                            "commit_title",
+                            e.target.innerText,
+                          )
+                        }
+                      >
+                        {evaluations[0]?.commit_title}
+                      </span>
                     </span>
-// !block(1:13) 0,3,red
-                    :{" "}
-                    <span
-                      contentEditable={editMode}
-                      className="outline-none"
-                      onBlur={(e) =>
-                        onArtifactChange(
-                          index,
-                          "commit_title",
-                          e.target.innerText,
-                        )
-                      }
-                    >
-                      {evaluations[0]?.commit_title}
-                    </span>
-// !block(1:1) 0,3,red
-                  </span>
-                }
-// !block(1:6) 0,3,red
-                viewOnly={
-                  IS_WAYFAIR
-                    ? true
-                    : pathname?.includes("/package-creator")
-                    ? !expanded
-                    : true
-                }
-// !block(1:11) 0,3,red
-                checked={selectedCommits?.includes(evaluations[0]?.hash)}
-                onCheck={handleCommitCheck}
-                no={index + 1}
-                url={evaluations[0]?.hash_url}
-                updatedAt={evaluations[0]?.committed_at}
-                onArtifactChange={(key: string, value: string) =>
-                  onArtifactChange(
-                    index,
-                    key === "message" ? "artifact_summary_string" : key,
-                    value,
-                  )
-                }
-// !block(1:3) 0,3,red
-              />
-              {index !== codeEvaluation?.length - 1 && (
-                <Divider sx={{ margin: "20px 0px" }} />
-              )}
-            </div>
-          );
-// !block(1:1) 0,3,red
-        })}
+                  }
+                  viewOnly={
+                    IS_WAYFAIR
+                      ? true
+                      : pathname?.includes("/package-creator")
+                      ? !expanded
+                      : true
+                  }
+                  checked={selectedCommits?.includes(evaluations[0]?.hash)}
+                  onCheck={handleCommitCheck}
+                  no={index + 1}
+                  url={evaluations[0]?.hash_url}
+                  repoLink={evaluations[0]?.hash_url?.split("/commit")[0]}
+                  updatedAt={evaluations[0]?.committed_at}
+                  onArtifactChange={(key: string, value: string) =>
+                    onArtifactChange(
+                      mainIndex,
+                      key === "message" ? "artifact_summary_string" : key,
+                      value,
+                    )
+                  }
+                />
+                {index !== codeEvaluation?.length - 1 && (
+                  <Divider sx={{ margin: "20px 0px" }} />
+                )}
+              </div>
+            );
+          })}
 
       {expanded && pathname?.includes("/package-creator") && (
         <>
