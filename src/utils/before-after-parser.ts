@@ -1,148 +1,187 @@
 interface CodeChanges {
-  addedLines: Array<[number, string]>;
-  removedLines: Array<[number, string]>;
-  modifiedLines: Array<[number, string, string]>;
-  lineMovements: Array<[number, number, string]>;
-  metrics: {
-      totalLinesOld: number;
-      totalLinesNew: number;
-      totalChanges: number;
-      linesAffected: Set<number>;
-      changePercentage: number;
-  };
+	addedLines: Array<[number, string]>;
+	removedLines: Array<[number, string]>;
+	modifiedLines: Array<[number, string, string]>;
+	lineMovements: Array<[number, number, string]>;
+	metrics: {
+		totalLinesOld: number;
+		totalLinesNew: number;
+		totalChanges: number;
+		linesAffected: Set<number>;
+		changePercentage: number;
+	};
 }
 
 interface ConsecutiveBlock {
-  startLine: number;
-  count: number;
-  color: string;
-  lines: string[];
+	startLine: number;
+	count: number;
+	color: string;
+	lines: string[];
 }
 
 function trackCodeChanges(oldCode: string, newCode: string): CodeChanges {
-  const oldLines = oldCode.trim().split('\n');
-  const newLines = newCode.trim().split('\n');
-  
-  const changes: CodeChanges = {
-      addedLines: [],
-      removedLines: [],
-      modifiedLines: [],
-      lineMovements: [],
-      metrics: {
-          totalLinesOld: oldLines.length,
-          totalLinesNew: newLines.length,
-          totalChanges: 0,
-          linesAffected: new Set<number>(),
-          changePercentage: 0
-      }
-  };
-  
-  const oldSet = new Set(oldLines);
-  const newSet = new Set(newLines);
-  
-  changes.addedLines = newLines.map((line, idx): [number, string] => [idx + 1, line])
-      .filter(([_, line]) => !oldSet.has(line));
-  
-  changes.removedLines = oldLines.map((line, idx): [number, string] => [idx + 1, line])
-      .filter(([_, line]) => !newSet.has(line));
-  
-  changes.metrics.totalChanges = 
-      changes.addedLines.length + 
-      changes.removedLines.length;
-  
-  changes.metrics.changePercentage = Number(
-      ((changes.metrics.totalChanges / Math.max(oldLines.length, newLines.length)) * 100)
-      .toFixed(2)
-  );
-  
-  return changes;
+	const oldLines = oldCode.trim().split('\n');
+	const newLines = newCode.trim().split('\n');
+
+	const changes: CodeChanges = {
+		addedLines: [],
+		removedLines: [],
+		modifiedLines: [],
+		lineMovements: [],
+		metrics: {
+			totalLinesOld: oldLines.length,
+			totalLinesNew: newLines.length,
+			totalChanges: 0,
+			linesAffected: new Set<number>(),
+			changePercentage: 0
+		}
+	};
+
+	const oldSet = new Set(oldLines);
+	const newSet = new Set(newLines);
+
+	changes.addedLines = newLines.map((line, idx): [number, string] => [idx + 1, line])
+		.filter(([_, line]) => !oldSet.has(line));
+
+	changes.removedLines = oldLines.map((line, idx): [number, string] => [idx + 1, line])
+		.filter(([_, line]) => !newSet.has(line));
+
+	changes.metrics.totalChanges =
+		changes.addedLines.length +
+		changes.removedLines.length;
+
+	changes.metrics.changePercentage = Number(
+		((changes.metrics.totalChanges / Math.max(oldLines.length, newLines.length)) * 100)
+			.toFixed(2)
+	);
+
+	return changes;
 }
 
 function findConsecutiveBlocks(lines: Array<[number, string]>): ConsecutiveBlock[] {
-  const blocks: ConsecutiveBlock[] = [];
-  let currentBlock: ConsecutiveBlock | null = null;
+	const blocks: ConsecutiveBlock[] = [];
+	let currentBlock: ConsecutiveBlock | null = null;
 
-  lines.forEach(([lineNum, content], index) => {
-      if (!currentBlock) {
-          currentBlock = {
-              startLine: lineNum,
-              count: 1,
-              color: '', // Will be set when adding comments
-              lines: [content]
-          };
-      } else if (lineNum === currentBlock.startLine + currentBlock.count) {
-          // Line is consecutive
-          currentBlock.count++;
-          currentBlock.lines.push(content);
-      } else {
-          // Break in consecutive lines
-          if (currentBlock) {
-              blocks.push(currentBlock);
-          }
-          currentBlock = {
-              startLine: lineNum,
-              count: 1,
-              color: '',
-              lines: [content]
-          };
-      }
-  });
+	lines.forEach(([lineNum, content], index) => {
+		if (!currentBlock) {
+			currentBlock = {
+				startLine: lineNum,
+				count: 1,
+				color: '', // Will be set when adding comments
+				lines: [content]
+			};
+		} else if (lineNum === currentBlock.startLine + currentBlock.count) {
+			// Line is consecutive
+			currentBlock.count++;
+			currentBlock.lines.push(content);
+		} else {
+			// Break in consecutive lines
+			if (currentBlock) {
+				blocks.push(currentBlock);
+			}
+			currentBlock = {
+				startLine: lineNum,
+				count: 1,
+				color: '',
+				lines: [content]
+			};
+		}
+	});
 
-  // Don't forget the last block
-  if (currentBlock) {
-      blocks.push(currentBlock);
-  }
+	// Don't forget the last block
+	if (currentBlock) {
+		blocks.push(currentBlock);
+	}
 
-  return blocks;
+	return blocks;
 }
 
 function addBlockComments(changes: CodeChanges, oldCode: string, newCode: string): { beforeCode: string, afterCode: string } {
-  const oldLines = oldCode.trim().split('\n');
-  const newLines = newCode.trim().split('\n');
-  
-  // Find consecutive blocks
-  const removedBlocks = findConsecutiveBlocks(changes.removedLines);
-  const addedBlocks = findConsecutiveBlocks(changes.addedLines);
-  
-  // Process removed lines (red blocks)
-  let beforeLines = [...oldLines];
-//   removedBlocks.forEach(block => {
-//       const comment = `// !block(1:${block.count}) 0,3,red`;
-//       const insertIndex = block.startLine - 1;
-//       beforeLines[insertIndex] = `${comment}\n${beforeLines[insertIndex]}`;
-//   });
-  
-  // Process added lines (teal blocks)
-  let afterLines = [...newLines];
+	const oldLines = oldCode.trim().split('\n');
+	const newLines = newCode.trim().split('\n');
+
+	// Find consecutive blocks
+	const removedBlocks = findConsecutiveBlocks(changes.removedLines);
+	const addedBlocks = findConsecutiveBlocks(changes.addedLines);
+	let contentMd: String[] = []
+
+	// Process removed lines (red blocks)
+	let beforeLines = [...oldLines];
+	// removedBlocks.forEach((block, index) => {
+	// 	const comment = `// !focus(1:${block.count})`;
+	// 	const insertIndex = block.startLine - 1;
+	// 	beforeLines[insertIndex] = `${comment}\n${beforeLines[insertIndex]}`;
+	// 	// break;
+	// 	// delete beforeLines[insertIndex]
+	// });
+
+	// Process added lines (teal blocks)
+	let afterLines = [...newLines];
+	// const beforeFileString =`## !!steps ${"before"}\n` +
+	// "\n" +
+	// "!duration 300\n" +
+	// "\n" +
+	// "```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx\n" +
+	// `${beforeLines.join('\n')}\n` +
+	// "```\n" +
+	// "\n";
+
+	// contentMd.push(beforeFileString)
+
+
 	const fs = require('fs');
-  addedBlocks.forEach((block, index) => {
-      const comment = `// !focus(1:${block.count})\n// !block(1:${block.count}) 0,3,teal`;
-      const insertIndex = block.startLine - 1;
-      afterLines[insertIndex] = `${comment}\n${afterLines[insertIndex]}`;
-			fs.writeFileSync(`after-${index}.txt`, afterLines.join('\n'), 'utf8');
-			delete afterLines[insertIndex]
-  });
-  
-  return {
-      beforeCode: beforeLines.join('\n'),
-      afterCode: afterLines.join('\n')
-  };
+	addedBlocks.forEach((block, index) => {
+		const comment = `// !focus(1:${block.count})\n// !block(1:${block.count}) 0,3,teal`;
+		const insertIndex = block.startLine - 1;
+		afterLines[insertIndex] = `${comment}\n${afterLines[insertIndex]}`;
+
+		const step = `## !!steps ${"before"}\n` +
+			"\n" +
+			"!duration 300\n" +
+			"\n" +
+			"```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx\n" +
+			`${beforeLines.join('\n')}\n` +
+			"```\n" +
+			"\n" +
+			`## !!steps ${index}\n` +
+			"\n" +
+			"!duration 300\n" +
+			"\n" +
+			"```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx\n" +
+			`${afterLines.join('\n')}\n` +
+			"```\n" +
+			"\n";
+
+		contentMd.push(step)
+		delete afterLines[insertIndex]
+	});
+
+	fs.writeFileSync(`content.md`, contentMd.join('\n'), 'utf8');
+
+
+
+
+
+	return {
+		beforeCode: beforeLines.join('\n'),
+		afterCode: afterLines.join('\n')
+	};
 }
 
 function saveToFiles(before: string, after: string): void {
-  const fs = require('fs');
-  
-  try {
-      fs.writeFileSync('before.txt', before, 'utf8');
-      fs.writeFileSync('after.txt', after, 'utf8');
-      console.log('Files saved successfully!');
-  } catch (error) {
-      console.error('Error saving files:', error);
-  }
+	const fs = require('fs');
+
+	try {
+		fs.writeFileSync('before.txt', before, 'utf8');
+		fs.writeFileSync('after.txt', after, 'utf8');
+		console.log('Files saved successfully!');
+	} catch (error) {
+		console.error('Error saving files:', error);
+	}
 }
 
 function generateReport(changes: CodeChanges): string {
-  return `
+	return `
 Code Change Analysis Report
 ==========================
 
@@ -159,10 +198,10 @@ Change Breakdown:
 }
 
 function processCodeChanges(oldCode: string, newCode: string): void {
-  const changes = trackCodeChanges(oldCode, newCode);
-  const { beforeCode, afterCode } = addBlockComments(changes, oldCode, newCode);
-  // saveToFiles(beforeCode, afterCode);
-  // console.log(generateReport(changes));
+	const changes = trackCodeChanges(oldCode, newCode);
+	const { beforeCode, afterCode } = addBlockComments(changes, oldCode, newCode);
+	// saveToFiles(beforeCode, afterCode);
+	// console.log(generateReport(changes));
 }
 
 const oldCode = "import { useFetchCodeCommits } from \"@/hooks/useApi\";\n" +
