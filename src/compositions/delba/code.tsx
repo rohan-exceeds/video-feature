@@ -1,15 +1,29 @@
-import { Pre, HighlightedCode } from "codehike/code"
 import React from "react"
-
+import { Pre, HighlightedCode, AnnotationHandler, BlockAnnotation, InnerLine } from "codehike/code"
 import { loadFont } from "@remotion/google-fonts/RobotoMono"
 import { tokenTransitions, useTokenTransitions } from "./token-transitions"
+import { block } from "./annotations/block"
 import { mark } from "./annotations/mark"
 import { focus } from "./annotations/focus"
-import { block } from "./annotations/block"
-import { callout } from "./annotations/callout"
-import { error } from "./annotations/error"
 
 const { fontFamily } = loadFont()
+
+export const diff: AnnotationHandler = {
+  name: "diff",
+  onlyIfAnnotated: true,
+  transform: (annotation: BlockAnnotation) => {
+    const color = annotation.query == "-" ? "#f85149" : "#3fb950"
+    return [annotation, { ...annotation, name: "mark", query: color }]
+  },
+  Line: ({ annotation, ...props }) => (
+    <>
+      <div className="...">
+        {annotation?.query}
+      </div>
+      <InnerLine merge={props} />
+    </>
+  ),
+}
 
 export function Code({
   oldCode,
@@ -21,6 +35,7 @@ export function Code({
   durationInFrames?: number
 }) {
   const { code, ref } = useTokenTransitions(oldCode, newCode, durationInFrames)
+
   return (
     <div
       style={{
@@ -29,16 +44,47 @@ export function Code({
         fontFamily,
         color: "#fffa",
         width: "100%",
+        maxHeight: "100%", // Allow layout to adapt to container
+        display: "flex",
+        flexDirection: "column",
       }}
     >
-      <div style={{ textAlign: "center", height: "1.5rem" }}>
+      {/* Sticky Top Bar */}
+      <div
+        style={{
+          position: "sticky",
+          top: 0,
+          backgroundColor: "#333", // Ensure contrast with text
+          color: "#fff",
+          padding: "10px",
+          zIndex: 10, // Keep it above the scrollable content
+        }}
+      >
         {newCode.meta}
       </div>
-      <Pre 
-      ref={ref} 
-      code={code} 
-      handlers={[tokenTransitions, mark, focus, block, callout, ...error]} 
-      />
+
+      {/* Scrollable Code Container */}
+      <div
+        className="scrollable-container"
+        style={{
+          overflow: "auto",
+          flex: 1, // Allow it to take the remaining space
+          scrollbarGutter: "none", // Ensure no scrollbar gutter
+        }}
+      >
+        <Pre
+          ref={ref}
+          code={code}
+          handlers={[tokenTransitions, block, mark, focus, diff]} // Include focus handler
+        />
+      </div>
+      <style>
+        {`
+        .scrollable-container::-webkit-scrollbar {
+          display: none; /* Hide scrollbar for Webkit browsers */
+        }
+        `}
+      </style>
     </div>
   )
 }

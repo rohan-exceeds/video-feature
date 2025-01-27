@@ -16,6 +16,7 @@
     "@remotion/google-fonts": "4.0.177",
     "@remotion/zod-types": "4.0.177",
     "codehike": "1.0.0",
+    "diff": "^7.0.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "remotion": "4.0.177",
@@ -24,6 +25,7 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
+    "@types/diff": "^7.0.0",
     "prettier": "^2.8.8",
     "typescript": "^5.5.2"
   },

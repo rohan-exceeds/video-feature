@@ -27,8 +27,8 @@ export default function RemotionRoot() {
       defaultProps={{ steps }}
       durationInFrames={duration}
       fps={60}
-      width={1920}
-      height={1080}
+      width={1200}
+      height={900}
     />
   )
 }
@@ -48,11 +48,13 @@ function Video({ steps }) {
             name={step.title}
             style={{ padding: "16px 42px" }}
           >
-            <Code
-              oldCode={steps[index - 1]?.code}
-              newCode={step.code}
-              durationInFrames={90}
-            />
+            <div style={{ overflow: "auto" }}>
+              <Code
+                oldCode={steps[index - 1]?.code}
+                newCode={step.code}
+                durationInFrames={step.duration}
+              />
+            </div>
           </Sequence>
         )
       })}
