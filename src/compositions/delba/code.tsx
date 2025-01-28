@@ -5,25 +5,9 @@ import { tokenTransitions, useTokenTransitions } from "./token-transitions"
 import { block } from "./annotations/block"
 import { mark } from "./annotations/mark"
 import { focus } from "./annotations/focus"
+import { diff } from "./annotations/diff"
 
 const { fontFamily } = loadFont()
-
-export const diff: AnnotationHandler = {
-  name: "diff",
-  onlyIfAnnotated: true,
-  transform: (annotation: BlockAnnotation) => {
-    const color = annotation.query == "-" ? "#f85149" : "#3fb950"
-    return [annotation, { ...annotation, name: "mark", query: color }]
-  },
-  Line: ({ annotation, ...props }) => (
-    <>
-      <div className="...">
-        {annotation?.query}
-      </div>
-      <InnerLine merge={props} />
-    </>
-  ),
-}
 
 export function Code({
   oldCode,

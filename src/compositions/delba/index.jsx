@@ -4,6 +4,7 @@ import { AbsoluteFill, Composition, Sequence, useCurrentFrame  } from "remotion"
 import React from "react"
 import { ProgressBar } from "./progress-bar"
 import { Code } from "./code"
+import { linearTiming, TransitionSeries } from "@remotion/transitions";
 
 import Content from "./content.md"
 const { steps } = parseRoot(
@@ -28,7 +29,7 @@ export default function RemotionRoot() {
       defaultProps={{ steps }}
       durationInFrames={duration}
       fps={30}
-      width={1920}
+      width={1200}
       height={1080}
     />
   )

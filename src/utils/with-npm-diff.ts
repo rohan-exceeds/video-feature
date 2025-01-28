@@ -57,45 +57,87 @@ function generateAddedScene(diff: Change[], addedIndex: number) {
   return sceneToAdd
 }
 
-for (let i = 0; i < diff.length; i++) {
-  // Removed Block
-  if(diff[i].added === false && diff[i].removed === true){
-    const scene = generateRemoveScene(diff, i);
-    scenes.push(scene)
-  }
+// for (let i = 0; i < diff.length; i++) {
+//   // Removed Block
+//   if(diff[i].added === false && diff[i].removed === true){
+//     const scene = generateRemoveScene(diff, i);
+//     scenes.push(scene)
+//   }
 
-    // Added Block
-  if(diff[i].added === true && diff[i].removed === false){
-    const scene = generateAddedScene(diff, i);
-    scenes.push(scene)
+//     // Added Block
+//   if(diff[i].added === true && diff[i].removed === false){
+//     const scene = generateAddedScene(diff, i);
+//     scenes.push(scene)
+//   }
+let afterCodeStr = ""
+for (let i = 0; i < diff.length; i++) {
+  if(i === 1){
+    continue;
+    // afterCodeStr += `// !focus(1:${diff[i].count})\n`
+  }else{
+    afterCodeStr += diff[i].value
+  }
+}
+
+
+let beforeCodeStr = ""
+for (let i = 0; i < diff.length; i++) {
+  if(i === 1){
+    beforeCodeStr += `// !focus(1:${diff[i].count})\n` + diff[i].value
+  }else{
+    beforeCodeStr += diff[i].value
   }
 }
 
 let contentMd: String[] = []
 
-for (let i = 0; i < scenes.length; i++) {
-  if(i===0){
-    const beforeCodeScene = `## !!steps ${"before"}\n` +
+
+const beforeCodeScene = `## !!steps ${"before"}\n` +
 			"\n" +
 			"!duration 400\n" +
 			"\n" +
 			"```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx\n" +
-			`${testOldCode}\n` +
+			`${beforeCodeStr}\n` +
 			"```\n" +
 			"\n" ;
 
-    contentMd.push(beforeCodeScene)
-  }
-  const step = `## !!steps ${i}\n` +
+contentMd.push(beforeCodeScene)
+
+
+const afterCodeScene = `## !!steps ${"after"}\n` +
 			"\n" +
-			"!duration 250\n" +
+			"!duration 400\n" +
 			"\n" +
 			"```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx\n" +
-			`${scenes[i].join('\n')}\n` +
+			`${afterCodeStr}\n` +
 			"```\n" +
 			"\n" ;
-  contentMd.push(step)
-}
+
+contentMd.push(afterCodeScene)
+
+// for (let i = 0; i < scenes.length; i++) {
+//   if(i===0){
+//     const beforeCodeScene = `## !!steps ${"before"}\n` +
+// 			"\n" +
+// 			"!duration 400\n" +
+// 			"\n" +
+// 			"```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx\n" +
+// 			`${testOldCode}\n` +
+// 			"```\n" +
+// 			"\n" ;
+
+//     contentMd.push(beforeCodeScene)
+//   }
+//   const step = `## !!steps ${i}\n` +
+// 			"\n" +
+// 			"!duration 250\n" +
+// 			"\n" +
+// 			"```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx\n" +
+// 			`${scenes[i].join('\n')}\n` +
+// 			"```\n" +
+// 			"\n" ;
+//   contentMd.push(step)
+// }
 const fs = require('fs');
 fs.writeFileSync(`content.md`, contentMd.join('\n'), 'utf8');
 console.log("Done!");
