@@ -74,18 +74,18 @@ for (let i = 0; i < diff.length; i++) {
 let contentMd: String[] = []
 
 for (let i = 0; i < scenes.length; i++) {
-  // if(i===0){
-  //   const beforeCodeScene = `## !!steps ${"before"}\n` +
-	// 		"\n" +
-	// 		"!duration 400\n" +
-	// 		"\n" +
-	// 		"```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx\n" +
-	// 		`${testOldCode}\n` +
-	// 		"```\n" +
-	// 		"\n" ;
+  if(i===0){
+    const beforeCodeScene = `## !!steps ${"before"}\n` +
+			"\n" +
+			"!duration 400\n" +
+			"\n" +
+			"```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx\n" +
+			`${testOldCode}\n` +
+			"```\n" +
+			"\n" ;
 
-  //   contentMd.push(beforeCodeScene)
-  // }
+    contentMd.push(beforeCodeScene)
+  }
   const step = `## !!steps ${i}\n` +
 			"\n" +
 			"!duration 250\n" +

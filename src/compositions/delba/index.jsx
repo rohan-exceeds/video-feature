@@ -1,6 +1,6 @@
 import { Block, HighlightedCodeBlock, parseRoot } from "codehike/blocks"
 import { z } from "zod"
-import { AbsoluteFill, Composition, Sequence } from "remotion"
+import { AbsoluteFill, Composition, Sequence, useCurrentFrame  } from "remotion"
 import React from "react"
 import { ProgressBar } from "./progress-bar"
 import { Code } from "./code"
@@ -20,20 +20,22 @@ const { steps } = parseRoot(
 
 export default function RemotionRoot() {
   const duration = steps.reduce((acc, step) => acc + step.duration, 0)
+  // const frame = useCurrentFrame();
   return (
     <Composition
       id="Delba"
       component={Video}
       defaultProps={{ steps }}
       durationInFrames={duration}
-      fps={60}
-      width={1200}
-      height={900}
+      fps={30}
+      width={1920}
+      height={1080}
     />
   )
 }
 
 function Video({ steps }) {
+  const frame = useCurrentFrame();
   let stepEnd = 0
   return (
     <AbsoluteFill style={{ backgroundColor: "#0D1117" }}>
@@ -42,6 +44,7 @@ function Video({ steps }) {
         stepEnd += step.duration
         return (
           <Sequence
+            frame={frame}
             key={index}
             from={stepEnd - step.duration}
             durationInFrames={step.duration}

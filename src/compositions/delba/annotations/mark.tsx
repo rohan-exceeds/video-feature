@@ -41,6 +41,7 @@ import { AnnotationHandler, InnerLine } from "codehike/code"
 export const mark: AnnotationHandler = {
   name: "mark",
   Line: ({ annotation, ...props }) => {
+    const frame = useCurrentFrame()
     const color = annotation?.query || "rgb(14 165 233)"
     return (
       <div
@@ -56,6 +57,7 @@ export const mark: AnnotationHandler = {
     )
   },
   Inline: ({ annotation, children }) => {
+    const frame = useCurrentFrame()
     const color = annotation?.query || "rgb(14 165 233)"
     return (
       <span
