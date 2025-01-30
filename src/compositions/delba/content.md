@@ -1,1064 +1,2503 @@
-## !!steps before
+## !!steps 0
+
+!duration 200
+
+```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx
+"use client";
+import { setSelectedDesignDoc } from "@/store/packageCreatorSlice";
+import { MDXEditorMethods } from "@mdxeditor/editor";
+import Close from "@mui/icons-material/Close";
+import { Checkbox, IconButton, Link } from "@mui/material";
+import { useMemo, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import MarkDownEditor from "../ui/MarkDownEditor";
+import GoogleDrivePicker from "./GoogleDrivePicker";
+
+export const Strength = ({
+  strengths,
+  editMode = false,
+  onDataChange = () => {},
+}: {
+  strengths: any[];
+  editMode: boolean;
+  onDataChange: any;
+}) => (
+  <div
+    className={`w-full border-1 ${
+      editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+    } rounded-xl p-4`}
+  >
+    <p className="text-[17px] font-semibold text-[#1A2636]">Strengths</p>
+    <ul className="text-sm font-normal list-disc px-4">
+      {strengths?.map((str: any, index: number) => (
+        <li key={str?.strength + index}>
+          <span
+            contentEditable={editMode}
+            className="font-semibold outline-none"
+
+// !focus(1:1)
+// !mark(1:1) red
+            onBlur={(e) => onDataChange(index, "strength", e.target.innerText)}
+
+          >
+            {str?.strength}
+          </span>
+          :{" "}
+          <span
+            contentEditable={editMode}
+
+            className="outline-none"
+            onBlur={(e) =>
+
+              onDataChange(index, "description", e.target.innerText)
+
+            }
+
+          >
+            {str?.description}
+          </span>
+
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export const Opportunity = ({
+  opportunities,
+  editMode = false,
+  onDataChange = () => {},
+}: {
+  opportunities: any[];
+  editMode: boolean;
+  onDataChange: any;
+}) => (
+  <div
+    className={`w-full border-1 ${
+      editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+    } rounded-xl p-4`}
+  >
+    <p className="text-[17px] font-semibold text-[#1A2636]">Opportunities</p>
+    <ul className="text-sm font-normal list-disc px-4">
+      {opportunities?.map((opp: any, index: number) => (
+        <li key={opp?.opportunity + index}>
+          <span
+            contentEditable={editMode}
+            className="font-semibold outline-none"
+            onBlur={(e) =>
+
+              onDataChange(index, "opportunity", e.target.innerText)
+
+            }
+          >
+            {opp?.opportunity}
+          </span>
+          :{" "}
+          <span
+
+            contentEditable={editMode}
+            className="outline-none "
+            onBlur={(e) =>
+
+              onDataChange(index, "description", e.target.innerText)
+
+            }
+
+          >
+            {opp?.description}
+          </span>
+
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export const Artifact = ({
+  viewOnly = false,
+  tags = [],
+  url = "",
+  updatedAt = "",
+  message = "",
+  onCheck = () => {},
+  checked = false,
+  value,
+  title = null,
+  no = 0,
+  artifactTitle = "Artifact",
+  editMode = false,
+  onArtifactChange = () => {},
+  repoName = "",
+
+}: any) => {
+  const editorRef = useRef<MDXEditorMethods>(null);
+  useMemo(() => editorRef.current?.setMarkdown(message), [message]);
+  return (
+    <div className="my-2">
+      <div className="flex gap-2 items-center">
+        {!viewOnly && (
+          <Checkbox
+            value={value}
+            onChange={() => onCheck(value)}
+            sx={{
+              "&.Mui-checked": {
+                color: "#4ED9EF",
+              },
+              color: "#29324166",
+              padding: 0,
+            }}
+            checked={checked}
+          />
+        )}
+        <p className="text-[#1A2636] text-[17px] font-semibold">
+          {artifactTitle} {no && no}
+        </p>
+      </div>
+      <div
+        className={`my-2 ${
+          editMode && "bg-blue-50 border-1 border-blue-100 p-3 rounded"
+        } `}
+      >
+        {!!url && !editMode ? (
+          <Link href={url} target="_blank" style={{ textDecoration: "none" }}>
+            <span className="outline-none text-[#518AB9] font-semibold text-[17px] no-underline">
+              {title}
+            </span>
+          </Link>
+        ) : typeof title === "string" ? (
+          <p className="text-[#518AB9] font-semibold text-[17px]">
+            <span
+              contentEditable={editMode}
+              className="outline-none"
+
+              onBlur={(e) => onArtifactChange("title", e.target.innerText)}
+
+            >
+              {title}
+            </span>
+          </p>
+        ) : (
+          title
+        )}
+
+        <p>
+          {!!repoName && (
+
+            <span
+              contentEditable={editMode}
+              onBlur={(e) => onArtifactChange("repo_name", e.target.innerText)}
+              className="text-sm font-medium pr-4 outline-none"
+
+            >
+
+              {repoName}
+            </span>
+
+          )}
+          {!!updatedAt && (
+            <span className="my-1 text-[#1A2636] text-xs italic">
+              Last updated: {updatedAt}
+            </span>
+          )}
+        </p>
+
+        {message && (
+          <div
+            onBlur={(e) =>
+
+              onArtifactChange("message", editorRef.current?.getMarkdown())
+            }
+            className="text-sm text-[#1A2636] outline-none -m-3 "
+          >
+            <MarkDownEditor
+              editorRef={editorRef}
+              markdown={message}
+              readOnly={!editMode}
+              hideToolbar={true}
+            />
+          </div>
+        )}
+        <div className="flex gap-4 flex-wrap items-center mt-2">
+          {tags.length > 0 &&
+            tags.map((tag: any) => (
+              <div
+                key={tag}
+                className="bg-[#C9DBE9] w-fit px-2 py-1 rounded-2xl text-[10px] text-[#1A2636] "
+              >
+                {tag}
+              </div>
+            ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const DesignDocumentBody = () => {
+  const dispatch = useDispatch();
+  const selectedDesignDoc = useSelector(
+    (state: any) => state?.packageCreatorSlice?.selectedDesignDoc,
+  );
+  return (
+    <>
+      <p className="text-[17px] font-semibold text-[#1A2636]">
+        Select Files from Google Drive
+      </p>
+      <div className="my-4">
+        {selectedDesignDoc.length > 0 &&
+          selectedDesignDoc.map((doc: any) => (
+            <div key={doc?.id} className="flex items-center gap-5">
+              <div className="h-5 w-5">
+                <img
+                  src={doc?.iconUrl}
+                  style={{ height: "auto", width: "100%" }}
+                  alt={doc?.name}
+                />
+              </div>
+              <div className="flex items-center w-full justify-between">
+                <div>
+                  <p className="text-sm text-[#1A2636]">{doc?.name}</p>
+                  <a
+                    className="text-sm text-[#518AB9]"
+                    target="_blank"
+                    href={doc?.url}
+                  >
+                    {doc?.url}
+                  </a>
+                </div>
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    dispatch(
+                      setSelectedDesignDoc(
+                        selectedDesignDoc.filter((i: any) => i?.id !== doc?.id),
+                      ),
+                    )
+                  }
+                >
+                  <Close fontSize="small" />
+                </IconButton>
+              </div>
+            </div>
+          ))}
+      </div>
+      <GoogleDrivePicker
+        onPick={(data) => {
+          const newDocs = data?.docs.filter(
+            (doc: any) =>
+              !selectedDesignDoc.some(
+                (selectedDoc: any) => selectedDoc.id === doc.id,
+              ),
+          );
+          dispatch(setSelectedDesignDoc([...selectedDesignDoc, ...newDocs]));
+        }}
+      />
+    </>
+  );
+};
+
+
+```
+
+
+## !!steps 1
+
+!duration 150
+
+```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx
+"use client";
+import { setSelectedDesignDoc } from "@/store/packageCreatorSlice";
+import { MDXEditorMethods } from "@mdxeditor/editor";
+import Close from "@mui/icons-material/Close";
+import { Checkbox, IconButton, Link } from "@mui/material";
+import { useMemo, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import MarkDownEditor from "../ui/MarkDownEditor";
+import GoogleDrivePicker from "./GoogleDrivePicker";
+
+export const Strength = ({
+  strengths,
+  editMode = false,
+  onDataChange = () => {},
+}: {
+  strengths: any[];
+  editMode: boolean;
+  onDataChange: any;
+}) => (
+  <div
+    className={`w-full border-1 ${
+      editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+    } rounded-xl p-4`}
+  >
+    <p className="text-[17px] font-semibold text-[#1A2636]">Strengths</p>
+    <ul className="text-sm font-normal list-disc px-4">
+      {strengths?.map((str: any, index: number) => (
+        <li key={str?.strength + index}>
+          <span
+            contentEditable={editMode}
+            className="font-semibold outline-none"
+
+// !focus(1:1)
+// !focus(1:3)
+          >
+            {str?.strength}
+          </span>
+          :{" "}
+          <span
+            contentEditable={editMode}
+
+            className="outline-none"
+            onBlur={(e) =>
+
+              onDataChange(index, "description", e.target.innerText)
+
+            }
+
+          >
+            {str?.description}
+          </span>
+
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export const Opportunity = ({
+  opportunities,
+  editMode = false,
+  onDataChange = () => {},
+}: {
+  opportunities: any[];
+  editMode: boolean;
+  onDataChange: any;
+}) => (
+  <div
+    className={`w-full border-1 ${
+      editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+    } rounded-xl p-4`}
+  >
+    <p className="text-[17px] font-semibold text-[#1A2636]">Opportunities</p>
+    <ul className="text-sm font-normal list-disc px-4">
+      {opportunities?.map((opp: any, index: number) => (
+        <li key={opp?.opportunity + index}>
+          <span
+            contentEditable={editMode}
+            className="font-semibold outline-none"
+            onBlur={(e) =>
+
+              onDataChange(index, "opportunity", e.target.innerText)
+
+            }
+          >
+            {opp?.opportunity}
+          </span>
+          :{" "}
+          <span
+
+            contentEditable={editMode}
+            className="outline-none "
+            onBlur={(e) =>
+
+              onDataChange(index, "description", e.target.innerText)
+
+            }
+
+          >
+            {opp?.description}
+          </span>
+
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export const Artifact = ({
+  viewOnly = false,
+  tags = [],
+  url = "",
+  updatedAt = "",
+  message = "",
+  onCheck = () => {},
+  checked = false,
+  value,
+  title = null,
+  no = 0,
+  artifactTitle = "Artifact",
+  editMode = false,
+  onArtifactChange = () => {},
+  repoName = "",
+
+}: any) => {
+  const editorRef = useRef<MDXEditorMethods>(null);
+  useMemo(() => editorRef.current?.setMarkdown(message), [message]);
+  return (
+    <div className="my-2">
+      <div className="flex gap-2 items-center">
+        {!viewOnly && (
+          <Checkbox
+            value={value}
+            onChange={() => onCheck(value)}
+            sx={{
+              "&.Mui-checked": {
+                color: "#4ED9EF",
+              },
+              color: "#29324166",
+              padding: 0,
+            }}
+            checked={checked}
+          />
+        )}
+        <p className="text-[#1A2636] text-[17px] font-semibold">
+          {artifactTitle} {no && no}
+        </p>
+      </div>
+      <div
+        className={`my-2 ${
+          editMode && "bg-blue-50 border-1 border-blue-100 p-3 rounded"
+        } `}
+      >
+        {!!url && !editMode ? (
+          <Link href={url} target="_blank" style={{ textDecoration: "none" }}>
+            <span className="outline-none text-[#518AB9] font-semibold text-[17px] no-underline">
+              {title}
+            </span>
+          </Link>
+        ) : typeof title === "string" ? (
+          <p className="text-[#518AB9] font-semibold text-[17px]">
+            <span
+              contentEditable={editMode}
+              className="outline-none"
+
+              onBlur={(e) => onArtifactChange("title", e.target.innerText)}
+
+            >
+              {title}
+            </span>
+          </p>
+        ) : (
+          title
+        )}
+
+        <p>
+          {!!repoName && (
+
+            <span
+              contentEditable={editMode}
+              onBlur={(e) => onArtifactChange("repo_name", e.target.innerText)}
+              className="text-sm font-medium pr-4 outline-none"
+
+            >
+
+              {repoName}
+            </span>
+
+          )}
+          {!!updatedAt && (
+            <span className="my-1 text-[#1A2636] text-xs italic">
+              Last updated: {updatedAt}
+            </span>
+          )}
+        </p>
+
+        {message && (
+          <div
+            onBlur={(e) =>
+
+              onArtifactChange("message", editorRef.current?.getMarkdown())
+            }
+            className="text-sm text-[#1A2636] outline-none -m-3 "
+          >
+            <MarkDownEditor
+              editorRef={editorRef}
+              markdown={message}
+              readOnly={!editMode}
+              hideToolbar={true}
+            />
+          </div>
+        )}
+        <div className="flex gap-4 flex-wrap items-center mt-2">
+          {tags.length > 0 &&
+            tags.map((tag: any) => (
+              <div
+                key={tag}
+                className="bg-[#C9DBE9] w-fit px-2 py-1 rounded-2xl text-[10px] text-[#1A2636] "
+              >
+                {tag}
+              </div>
+            ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const DesignDocumentBody = () => {
+  const dispatch = useDispatch();
+  const selectedDesignDoc = useSelector(
+    (state: any) => state?.packageCreatorSlice?.selectedDesignDoc,
+  );
+  return (
+    <>
+      <p className="text-[17px] font-semibold text-[#1A2636]">
+        Select Files from Google Drive
+      </p>
+      <div className="my-4">
+        {selectedDesignDoc.length > 0 &&
+          selectedDesignDoc.map((doc: any) => (
+            <div key={doc?.id} className="flex items-center gap-5">
+              <div className="h-5 w-5">
+                <img
+                  src={doc?.iconUrl}
+                  style={{ height: "auto", width: "100%" }}
+                  alt={doc?.name}
+                />
+              </div>
+              <div className="flex items-center w-full justify-between">
+                <div>
+                  <p className="text-sm text-[#1A2636]">{doc?.name}</p>
+                  <a
+                    className="text-sm text-[#518AB9]"
+                    target="_blank"
+                    href={doc?.url}
+                  >
+                    {doc?.url}
+                  </a>
+                </div>
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    dispatch(
+                      setSelectedDesignDoc(
+                        selectedDesignDoc.filter((i: any) => i?.id !== doc?.id),
+                      ),
+                    )
+                  }
+                >
+                  <Close fontSize="small" />
+                </IconButton>
+              </div>
+            </div>
+          ))}
+      </div>
+      <GoogleDrivePicker
+        onPick={(data) => {
+          const newDocs = data?.docs.filter(
+            (doc: any) =>
+              !selectedDesignDoc.some(
+                (selectedDoc: any) => selectedDoc.id === doc.id,
+              ),
+          );
+          dispatch(setSelectedDesignDoc([...selectedDesignDoc, ...newDocs]));
+        }}
+      />
+    </>
+  );
+};
+
+
+```
+
+
+## !!steps 2
+
+!duration 200
+
+```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx
+"use client";
+import { setSelectedDesignDoc } from "@/store/packageCreatorSlice";
+import { MDXEditorMethods } from "@mdxeditor/editor";
+import Close from "@mui/icons-material/Close";
+import { Checkbox, IconButton, Link } from "@mui/material";
+import { useMemo, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import MarkDownEditor from "../ui/MarkDownEditor";
+import GoogleDrivePicker from "./GoogleDrivePicker";
+
+export const Strength = ({
+  strengths,
+  editMode = false,
+  onDataChange = () => {},
+}: {
+  strengths: any[];
+  editMode: boolean;
+  onDataChange: any;
+}) => (
+  <div
+    className={`w-full border-1 ${
+      editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+    } rounded-xl p-4`}
+  >
+    <p className="text-[17px] font-semibold text-[#1A2636]">Strengths</p>
+    <ul className="text-sm font-normal list-disc px-4">
+      {strengths?.map((str: any, index: number) => (
+        <li key={str?.strength + index}>
+          <span
+            contentEditable={editMode}
+            className="font-semibold outline-none"
+
+// !mark(1:3) green
+            onBlur={(e) =>
+              editMode && onDataChange(index, "strength", e.target.innerText)
+            }
+
+          >
+            {str?.strength}
+          </span>
+          :{" "}
+          <span
+            contentEditable={editMode}
+
+            className="outline-none"
+            onBlur={(e) =>
+
+              onDataChange(index, "description", e.target.innerText)
+
+            }
+
+          >
+            {str?.description}
+          </span>
+
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export const Opportunity = ({
+  opportunities,
+  editMode = false,
+  onDataChange = () => {},
+}: {
+  opportunities: any[];
+  editMode: boolean;
+  onDataChange: any;
+}) => (
+  <div
+    className={`w-full border-1 ${
+      editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+    } rounded-xl p-4`}
+  >
+    <p className="text-[17px] font-semibold text-[#1A2636]">Opportunities</p>
+    <ul className="text-sm font-normal list-disc px-4">
+      {opportunities?.map((opp: any, index: number) => (
+        <li key={opp?.opportunity + index}>
+          <span
+            contentEditable={editMode}
+            className="font-semibold outline-none"
+            onBlur={(e) =>
+
+              onDataChange(index, "opportunity", e.target.innerText)
+
+            }
+          >
+            {opp?.opportunity}
+          </span>
+          :{" "}
+          <span
+
+            contentEditable={editMode}
+            className="outline-none "
+            onBlur={(e) =>
+
+              onDataChange(index, "description", e.target.innerText)
+
+            }
+
+          >
+            {opp?.description}
+          </span>
+
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export const Artifact = ({
+  viewOnly = false,
+  tags = [],
+  url = "",
+  updatedAt = "",
+  message = "",
+  onCheck = () => {},
+  checked = false,
+  value,
+  title = null,
+  no = 0,
+  artifactTitle = "Artifact",
+  editMode = false,
+  onArtifactChange = () => {},
+  repoName = "",
+
+}: any) => {
+  const editorRef = useRef<MDXEditorMethods>(null);
+  useMemo(() => editorRef.current?.setMarkdown(message), [message]);
+  return (
+    <div className="my-2">
+      <div className="flex gap-2 items-center">
+        {!viewOnly && (
+          <Checkbox
+            value={value}
+            onChange={() => onCheck(value)}
+            sx={{
+              "&.Mui-checked": {
+                color: "#4ED9EF",
+              },
+              color: "#29324166",
+              padding: 0,
+            }}
+            checked={checked}
+          />
+        )}
+        <p className="text-[#1A2636] text-[17px] font-semibold">
+          {artifactTitle} {no && no}
+        </p>
+      </div>
+      <div
+        className={`my-2 ${
+          editMode && "bg-blue-50 border-1 border-blue-100 p-3 rounded"
+        } `}
+      >
+        {!!url && !editMode ? (
+          <Link href={url} target="_blank" style={{ textDecoration: "none" }}>
+            <span className="outline-none text-[#518AB9] font-semibold text-[17px] no-underline">
+              {title}
+            </span>
+          </Link>
+        ) : typeof title === "string" ? (
+          <p className="text-[#518AB9] font-semibold text-[17px]">
+            <span
+              contentEditable={editMode}
+              className="outline-none"
+
+              onBlur={(e) => onArtifactChange("title", e.target.innerText)}
+
+            >
+              {title}
+            </span>
+          </p>
+        ) : (
+          title
+        )}
+
+        <p>
+          {!!repoName && (
+
+            <span
+              contentEditable={editMode}
+              onBlur={(e) => onArtifactChange("repo_name", e.target.innerText)}
+              className="text-sm font-medium pr-4 outline-none"
+
+            >
+
+              {repoName}
+            </span>
+
+          )}
+          {!!updatedAt && (
+            <span className="my-1 text-[#1A2636] text-xs italic">
+              Last updated: {updatedAt}
+            </span>
+          )}
+        </p>
+
+        {message && (
+          <div
+            onBlur={(e) =>
+
+              onArtifactChange("message", editorRef.current?.getMarkdown())
+            }
+            className="text-sm text-[#1A2636] outline-none -m-3 "
+          >
+            <MarkDownEditor
+              editorRef={editorRef}
+              markdown={message}
+              readOnly={!editMode}
+              hideToolbar={true}
+            />
+          </div>
+        )}
+        <div className="flex gap-4 flex-wrap items-center mt-2">
+          {tags.length > 0 &&
+            tags.map((tag: any) => (
+              <div
+                key={tag}
+                className="bg-[#C9DBE9] w-fit px-2 py-1 rounded-2xl text-[10px] text-[#1A2636] "
+              >
+                {tag}
+              </div>
+            ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const DesignDocumentBody = () => {
+  const dispatch = useDispatch();
+  const selectedDesignDoc = useSelector(
+    (state: any) => state?.packageCreatorSlice?.selectedDesignDoc,
+  );
+  return (
+    <>
+      <p className="text-[17px] font-semibold text-[#1A2636]">
+        Select Files from Google Drive
+      </p>
+      <div className="my-4">
+        {selectedDesignDoc.length > 0 &&
+          selectedDesignDoc.map((doc: any) => (
+            <div key={doc?.id} className="flex items-center gap-5">
+              <div className="h-5 w-5">
+                <img
+                  src={doc?.iconUrl}
+                  style={{ height: "auto", width: "100%" }}
+                  alt={doc?.name}
+                />
+              </div>
+              <div className="flex items-center w-full justify-between">
+                <div>
+                  <p className="text-sm text-[#1A2636]">{doc?.name}</p>
+                  <a
+                    className="text-sm text-[#518AB9]"
+                    target="_blank"
+                    href={doc?.url}
+                  >
+                    {doc?.url}
+                  </a>
+                </div>
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    dispatch(
+                      setSelectedDesignDoc(
+                        selectedDesignDoc.filter((i: any) => i?.id !== doc?.id),
+                      ),
+                    )
+                  }
+                >
+                  <Close fontSize="small" />
+                </IconButton>
+              </div>
+            </div>
+          ))}
+      </div>
+      <GoogleDrivePicker
+        onPick={(data) => {
+          const newDocs = data?.docs.filter(
+            (doc: any) =>
+              !selectedDesignDoc.some(
+                (selectedDoc: any) => selectedDoc.id === doc.id,
+              ),
+          );
+          dispatch(setSelectedDesignDoc([...selectedDesignDoc, ...newDocs]));
+        }}
+      />
+    </>
+  );
+};
+
+
+```
+
+
+## !!steps 3
+
+!duration 200
+
+```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx
+"use client";
+import { setSelectedDesignDoc } from "@/store/packageCreatorSlice";
+import { MDXEditorMethods } from "@mdxeditor/editor";
+import Close from "@mui/icons-material/Close";
+import { Checkbox, IconButton, Link } from "@mui/material";
+import { useMemo, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import MarkDownEditor from "../ui/MarkDownEditor";
+import GoogleDrivePicker from "./GoogleDrivePicker";
+
+export const Strength = ({
+  strengths,
+  editMode = false,
+  onDataChange = () => {},
+}: {
+  strengths: any[];
+  editMode: boolean;
+  onDataChange: any;
+}) => (
+  <div
+    className={`w-full border-1 ${
+      editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+    } rounded-xl p-4`}
+  >
+    <p className="text-[17px] font-semibold text-[#1A2636]">Strengths</p>
+    <ul className="text-sm font-normal list-disc px-4">
+      {strengths?.map((str: any, index: number) => (
+        <li key={str?.strength + index}>
+          <span
+            contentEditable={editMode}
+            className="font-semibold outline-none"
+
+            onBlur={(e) => onDataChange(index, "strength", e.target.innerText)}
+
+            onBlur={(e) =>
+              editMode && onDataChange(index, "strength", e.target.innerText)
+            }
+
+          >
+            {str?.strength}
+          </span>
+          :{" "}
+          <span
+            contentEditable={editMode}
+
+// !focus(1:1)
+
+            className="outline-none"
+            onBlur={(e) =>
+
+              onDataChange(index, "description", e.target.innerText)
+
+              editMode && onDataChange(index, "description", e.target.innerText)
+
+            }
+
+          >
+            {str?.description}
+          </span>
+
+          ></span>
+
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export const Opportunity = ({
+  opportunities,
+  editMode = false,
+  onDataChange = () => {},
+}: {
+  opportunities: any[];
+  editMode: boolean;
+  onDataChange: any;
+}) => (
+  <div
+    className={`w-full border-1 ${
+      editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+    } rounded-xl p-4`}
+  >
+    <p className="text-[17px] font-semibold text-[#1A2636]">Opportunities</p>
+    <ul className="text-sm font-normal list-disc px-4">
+      {opportunities?.map((opp: any, index: number) => (
+        <li key={opp?.opportunity + index}>
+          <span
+            contentEditable={editMode}
+            className="font-semibold outline-none"
+            onBlur={(e) =>
+
+              onDataChange(index, "opportunity", e.target.innerText)
+
+              editMode && onDataChange(index, "opportunity", e.target.innerText)
+
+            }
+          >
+            {opp?.opportunity}
+          </span>
+          :{" "}
+          <span
+
+            dangerouslySetInnerHTML={{ __html: opp?.description }}
+
+            contentEditable={editMode}
+            className="outline-none "
+            onBlur={(e) =>
+
+              onDataChange(index, "description", e.target.innerText)
+
+              editMode && onDataChange(index, "description", e.target.innerText)
+
+            }
+
+          >
+            {opp?.description}
+          </span>
+
+          ></span>
+
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export const Artifact = ({
+  viewOnly = false,
+  tags = [],
+  url = "",
+  updatedAt = "",
+  message = "",
+  onCheck = () => {},
+  checked = false,
+  value,
+  title = null,
+  no = 0,
+  artifactTitle = "Artifact",
+  editMode = false,
+  onArtifactChange = () => {},
+  repoName = "",
+
+  repoLink = "",
+
+}: any) => {
+  const editorRef = useRef<MDXEditorMethods>(null);
+  useMemo(() => editorRef.current?.setMarkdown(message), [message]);
+  return (
+    <div className="my-2">
+      <div className="flex gap-2 items-center">
+        {!viewOnly && (
+          <Checkbox
+            value={value}
+            onChange={() => onCheck(value)}
+            sx={{
+              "&.Mui-checked": {
+                color: "#4ED9EF",
+              },
+              color: "#29324166",
+              padding: 0,
+            }}
+            checked={checked}
+          />
+        )}
+        <p className="text-[#1A2636] text-[17px] font-semibold">
+          {artifactTitle} {no && no}
+        </p>
+      </div>
+      <div
+        className={`my-2 ${
+          editMode && "bg-blue-50 border-1 border-blue-100 p-3 rounded"
+        } `}
+      >
+        {!!url && !editMode ? (
+          <Link href={url} target="_blank" style={{ textDecoration: "none" }}>
+            <span className="outline-none text-[#518AB9] font-semibold text-[17px] no-underline">
+              {title}
+            </span>
+          </Link>
+        ) : typeof title === "string" ? (
+          <p className="text-[#518AB9] font-semibold text-[17px]">
+            <span
+              contentEditable={editMode}
+              className="outline-none"
+
+              onBlur={(e) => onArtifactChange("title", e.target.innerText)}
+
+              onBlur={(e) =>
+                editMode && onArtifactChange("title", e.target.innerText)
+              }
+
+            >
+              {title}
+            </span>
+          </p>
+        ) : (
+          title
+        )}
+
+        <p>
+          {!!repoName && (
+
+            <span
+              contentEditable={editMode}
+              onBlur={(e) => onArtifactChange("repo_name", e.target.innerText)}
+              className="text-sm font-medium pr-4 outline-none"
+
+            <Link
+              target="_blank"
+              href={repoLink}
+              style={{ textDecoration: "none" }}
+
+            >
+
+              {repoName}
+            </span>
+
+              <span
+                contentEditable={editMode}
+                onBlur={(e) =>
+                  editMode && onArtifactChange("repo_name", e.target.innerText)
+                }
+                className="text-sm font-medium pr-4 outline-none"
+              >
+                {repoName}
+              </span>
+            </Link>
+
+          )}
+          {!!updatedAt && (
+            <span className="my-1 text-[#1A2636] text-xs italic">
+              Last updated: {updatedAt}
+            </span>
+          )}
+        </p>
+
+        {message && (
+          <div
+            onBlur={(e) =>
+
+              editMode &&
+
+              onArtifactChange("message", editorRef.current?.getMarkdown())
+            }
+            className="text-sm text-[#1A2636] outline-none -m-3 "
+          >
+            <MarkDownEditor
+              editorRef={editorRef}
+              markdown={message}
+              readOnly={!editMode}
+              hideToolbar={true}
+            />
+          </div>
+        )}
+        <div className="flex gap-4 flex-wrap items-center mt-2">
+          {tags.length > 0 &&
+            tags.map((tag: any) => (
+              <div
+                key={tag}
+                className="bg-[#C9DBE9] w-fit px-2 py-1 rounded-2xl text-[10px] text-[#1A2636] "
+              >
+                {tag}
+              </div>
+            ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const DesignDocumentBody = () => {
+  const dispatch = useDispatch();
+  const selectedDesignDoc = useSelector(
+    (state: any) => state?.packageCreatorSlice?.selectedDesignDoc,
+  );
+  return (
+    <>
+      <p className="text-[17px] font-semibold text-[#1A2636]">
+        Select Files from Google Drive
+      </p>
+      <div className="my-4">
+        {selectedDesignDoc.length > 0 &&
+          selectedDesignDoc.map((doc: any) => (
+            <div key={doc?.id} className="flex items-center gap-5">
+              <div className="h-5 w-5">
+                <img
+                  src={doc?.iconUrl}
+                  style={{ height: "auto", width: "100%" }}
+                  alt={doc?.name}
+                />
+              </div>
+              <div className="flex items-center w-full justify-between">
+                <div>
+                  <p className="text-sm text-[#1A2636]">{doc?.name}</p>
+                  <a
+                    className="text-sm text-[#518AB9]"
+                    target="_blank"
+                    href={doc?.url}
+                  >
+                    {doc?.url}
+                  </a>
+                </div>
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    dispatch(
+                      setSelectedDesignDoc(
+                        selectedDesignDoc.filter((i: any) => i?.id !== doc?.id),
+                      ),
+                    )
+                  }
+                >
+                  <Close fontSize="small" />
+                </IconButton>
+              </div>
+            </div>
+          ))}
+      </div>
+      <GoogleDrivePicker
+        onPick={(data) => {
+          const newDocs = data?.docs.filter(
+            (doc: any) =>
+              !selectedDesignDoc.some(
+                (selectedDoc: any) => selectedDoc.id === doc.id,
+              ),
+          );
+          dispatch(setSelectedDesignDoc([...selectedDesignDoc, ...newDocs]));
+        }}
+      />
+    </>
+  );
+};
+
+
+```
+
+
+## !!steps 4
+
+!duration 200
+
+```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx
+"use client";
+import { setSelectedDesignDoc } from "@/store/packageCreatorSlice";
+import { MDXEditorMethods } from "@mdxeditor/editor";
+import Close from "@mui/icons-material/Close";
+import { Checkbox, IconButton, Link } from "@mui/material";
+import { useMemo, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import MarkDownEditor from "../ui/MarkDownEditor";
+import GoogleDrivePicker from "./GoogleDrivePicker";
+
+export const Strength = ({
+  strengths,
+  editMode = false,
+  onDataChange = () => {},
+}: {
+  strengths: any[];
+  editMode: boolean;
+  onDataChange: any;
+}) => (
+  <div
+    className={`w-full border-1 ${
+      editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+    } rounded-xl p-4`}
+  >
+    <p className="text-[17px] font-semibold text-[#1A2636]">Strengths</p>
+    <ul className="text-sm font-normal list-disc px-4">
+      {strengths?.map((str: any, index: number) => (
+        <li key={str?.strength + index}>
+          <span
+            contentEditable={editMode}
+            className="font-semibold outline-none"
+
+            onBlur={(e) => onDataChange(index, "strength", e.target.innerText)}
+
+            onBlur={(e) =>
+              editMode && onDataChange(index, "strength", e.target.innerText)
+            }
+
+          >
+            {str?.strength}
+          </span>
+          :{" "}
+          <span
+            contentEditable={editMode}
+
+// !mark(1:1) green
+            dangerouslySetInnerHTML={{ __html: str?.description }}
+
+            className="outline-none"
+            onBlur={(e) =>
+
+              onDataChange(index, "description", e.target.innerText)
+
+              editMode && onDataChange(index, "description", e.target.innerText)
+
+            }
+
+          >
+            {str?.description}
+          </span>
+
+          ></span>
+
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export const Opportunity = ({
+  opportunities,
+  editMode = false,
+  onDataChange = () => {},
+}: {
+  opportunities: any[];
+  editMode: boolean;
+  onDataChange: any;
+}) => (
+  <div
+    className={`w-full border-1 ${
+      editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+    } rounded-xl p-4`}
+  >
+    <p className="text-[17px] font-semibold text-[#1A2636]">Opportunities</p>
+    <ul className="text-sm font-normal list-disc px-4">
+      {opportunities?.map((opp: any, index: number) => (
+        <li key={opp?.opportunity + index}>
+          <span
+            contentEditable={editMode}
+            className="font-semibold outline-none"
+            onBlur={(e) =>
+
+              onDataChange(index, "opportunity", e.target.innerText)
+
+              editMode && onDataChange(index, "opportunity", e.target.innerText)
+
+            }
+          >
+            {opp?.opportunity}
+          </span>
+          :{" "}
+          <span
+
+            dangerouslySetInnerHTML={{ __html: opp?.description }}
+
+            contentEditable={editMode}
+            className="outline-none "
+            onBlur={(e) =>
+
+              onDataChange(index, "description", e.target.innerText)
+
+              editMode && onDataChange(index, "description", e.target.innerText)
+
+            }
+
+          >
+            {opp?.description}
+          </span>
+
+          ></span>
+
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export const Artifact = ({
+  viewOnly = false,
+  tags = [],
+  url = "",
+  updatedAt = "",
+  message = "",
+  onCheck = () => {},
+  checked = false,
+  value,
+  title = null,
+  no = 0,
+  artifactTitle = "Artifact",
+  editMode = false,
+  onArtifactChange = () => {},
+  repoName = "",
+
+  repoLink = "",
+
+}: any) => {
+  const editorRef = useRef<MDXEditorMethods>(null);
+  useMemo(() => editorRef.current?.setMarkdown(message), [message]);
+  return (
+    <div className="my-2">
+      <div className="flex gap-2 items-center">
+        {!viewOnly && (
+          <Checkbox
+            value={value}
+            onChange={() => onCheck(value)}
+            sx={{
+              "&.Mui-checked": {
+                color: "#4ED9EF",
+              },
+              color: "#29324166",
+              padding: 0,
+            }}
+            checked={checked}
+          />
+        )}
+        <p className="text-[#1A2636] text-[17px] font-semibold">
+          {artifactTitle} {no && no}
+        </p>
+      </div>
+      <div
+        className={`my-2 ${
+          editMode && "bg-blue-50 border-1 border-blue-100 p-3 rounded"
+        } `}
+      >
+        {!!url && !editMode ? (
+          <Link href={url} target="_blank" style={{ textDecoration: "none" }}>
+            <span className="outline-none text-[#518AB9] font-semibold text-[17px] no-underline">
+              {title}
+            </span>
+          </Link>
+        ) : typeof title === "string" ? (
+          <p className="text-[#518AB9] font-semibold text-[17px]">
+            <span
+              contentEditable={editMode}
+              className="outline-none"
+
+              onBlur={(e) => onArtifactChange("title", e.target.innerText)}
+
+              onBlur={(e) =>
+                editMode && onArtifactChange("title", e.target.innerText)
+              }
+
+            >
+              {title}
+            </span>
+          </p>
+        ) : (
+          title
+        )}
+
+        <p>
+          {!!repoName && (
+
+            <span
+              contentEditable={editMode}
+              onBlur={(e) => onArtifactChange("repo_name", e.target.innerText)}
+              className="text-sm font-medium pr-4 outline-none"
+
+            <Link
+              target="_blank"
+              href={repoLink}
+              style={{ textDecoration: "none" }}
+
+            >
+
+              {repoName}
+            </span>
+
+              <span
+                contentEditable={editMode}
+                onBlur={(e) =>
+                  editMode && onArtifactChange("repo_name", e.target.innerText)
+                }
+                className="text-sm font-medium pr-4 outline-none"
+              >
+                {repoName}
+              </span>
+            </Link>
+
+          )}
+          {!!updatedAt && (
+            <span className="my-1 text-[#1A2636] text-xs italic">
+              Last updated: {updatedAt}
+            </span>
+          )}
+        </p>
+
+        {message && (
+          <div
+            onBlur={(e) =>
+
+              editMode &&
+
+              onArtifactChange("message", editorRef.current?.getMarkdown())
+            }
+            className="text-sm text-[#1A2636] outline-none -m-3 "
+          >
+            <MarkDownEditor
+              editorRef={editorRef}
+              markdown={message}
+              readOnly={!editMode}
+              hideToolbar={true}
+            />
+          </div>
+        )}
+        <div className="flex gap-4 flex-wrap items-center mt-2">
+          {tags.length > 0 &&
+            tags.map((tag: any) => (
+              <div
+                key={tag}
+                className="bg-[#C9DBE9] w-fit px-2 py-1 rounded-2xl text-[10px] text-[#1A2636] "
+              >
+                {tag}
+              </div>
+            ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const DesignDocumentBody = () => {
+  const dispatch = useDispatch();
+  const selectedDesignDoc = useSelector(
+    (state: any) => state?.packageCreatorSlice?.selectedDesignDoc,
+  );
+  return (
+    <>
+      <p className="text-[17px] font-semibold text-[#1A2636]">
+        Select Files from Google Drive
+      </p>
+      <div className="my-4">
+        {selectedDesignDoc.length > 0 &&
+          selectedDesignDoc.map((doc: any) => (
+            <div key={doc?.id} className="flex items-center gap-5">
+              <div className="h-5 w-5">
+                <img
+                  src={doc?.iconUrl}
+                  style={{ height: "auto", width: "100%" }}
+                  alt={doc?.name}
+                />
+              </div>
+              <div className="flex items-center w-full justify-between">
+                <div>
+                  <p className="text-sm text-[#1A2636]">{doc?.name}</p>
+                  <a
+                    className="text-sm text-[#518AB9]"
+                    target="_blank"
+                    href={doc?.url}
+                  >
+                    {doc?.url}
+                  </a>
+                </div>
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    dispatch(
+                      setSelectedDesignDoc(
+                        selectedDesignDoc.filter((i: any) => i?.id !== doc?.id),
+                      ),
+                    )
+                  }
+                >
+                  <Close fontSize="small" />
+                </IconButton>
+              </div>
+            </div>
+          ))}
+      </div>
+      <GoogleDrivePicker
+        onPick={(data) => {
+          const newDocs = data?.docs.filter(
+            (doc: any) =>
+              !selectedDesignDoc.some(
+                (selectedDoc: any) => selectedDoc.id === doc.id,
+              ),
+          );
+          dispatch(setSelectedDesignDoc([...selectedDesignDoc, ...newDocs]));
+        }}
+      />
+    </>
+  );
+};
+
+
+```
+
+
+## !!steps 5
+
+!duration 200
+
+```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx
+"use client";
+import { setSelectedDesignDoc } from "@/store/packageCreatorSlice";
+import { MDXEditorMethods } from "@mdxeditor/editor";
+import Close from "@mui/icons-material/Close";
+import { Checkbox, IconButton, Link } from "@mui/material";
+import { useMemo, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import MarkDownEditor from "../ui/MarkDownEditor";
+import GoogleDrivePicker from "./GoogleDrivePicker";
+
+export const Strength = ({
+  strengths,
+  editMode = false,
+  onDataChange = () => {},
+}: {
+  strengths: any[];
+  editMode: boolean;
+  onDataChange: any;
+}) => (
+  <div
+    className={`w-full border-1 ${
+      editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+    } rounded-xl p-4`}
+  >
+    <p className="text-[17px] font-semibold text-[#1A2636]">Strengths</p>
+    <ul className="text-sm font-normal list-disc px-4">
+      {strengths?.map((str: any, index: number) => (
+        <li key={str?.strength + index}>
+          <span
+            contentEditable={editMode}
+            className="font-semibold outline-none"
+
+            onBlur={(e) =>
+              editMode && onDataChange(index, "strength", e.target.innerText)
+            }
+
+          >
+            {str?.strength}
+          </span>
+          :{" "}
+          <span
+            contentEditable={editMode}
+
+            dangerouslySetInnerHTML={{ __html: str?.description }}
+
+            className="outline-none"
+            onBlur={(e) =>
+
+// !focus(1:1)
+// !mark(1:1) red
+              onDataChange(index, "description", e.target.innerText)
+
+            }
+
+          >
+            {str?.description}
+          </span>
+
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export const Opportunity = ({
+  opportunities,
+  editMode = false,
+  onDataChange = () => {},
+}: {
+  opportunities: any[];
+  editMode: boolean;
+  onDataChange: any;
+}) => (
+  <div
+    className={`w-full border-1 ${
+      editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+    } rounded-xl p-4`}
+  >
+    <p className="text-[17px] font-semibold text-[#1A2636]">Opportunities</p>
+    <ul className="text-sm font-normal list-disc px-4">
+      {opportunities?.map((opp: any, index: number) => (
+        <li key={opp?.opportunity + index}>
+          <span
+            contentEditable={editMode}
+            className="font-semibold outline-none"
+            onBlur={(e) =>
+
+              onDataChange(index, "opportunity", e.target.innerText)
+
+            }
+          >
+            {opp?.opportunity}
+          </span>
+          :{" "}
+          <span
+
+            contentEditable={editMode}
+            className="outline-none "
+            onBlur={(e) =>
+
+              onDataChange(index, "description", e.target.innerText)
+
+            }
+
+          >
+            {opp?.description}
+          </span>
+
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export const Artifact = ({
+  viewOnly = false,
+  tags = [],
+  url = "",
+  updatedAt = "",
+  message = "",
+  onCheck = () => {},
+  checked = false,
+  value,
+  title = null,
+  no = 0,
+  artifactTitle = "Artifact",
+  editMode = false,
+  onArtifactChange = () => {},
+  repoName = "",
+
+}: any) => {
+  const editorRef = useRef<MDXEditorMethods>(null);
+  useMemo(() => editorRef.current?.setMarkdown(message), [message]);
+  return (
+    <div className="my-2">
+      <div className="flex gap-2 items-center">
+        {!viewOnly && (
+          <Checkbox
+            value={value}
+            onChange={() => onCheck(value)}
+            sx={{
+              "&.Mui-checked": {
+                color: "#4ED9EF",
+              },
+              color: "#29324166",
+              padding: 0,
+            }}
+            checked={checked}
+          />
+        )}
+        <p className="text-[#1A2636] text-[17px] font-semibold">
+          {artifactTitle} {no && no}
+        </p>
+      </div>
+      <div
+        className={`my-2 ${
+          editMode && "bg-blue-50 border-1 border-blue-100 p-3 rounded"
+        } `}
+      >
+        {!!url && !editMode ? (
+          <Link href={url} target="_blank" style={{ textDecoration: "none" }}>
+            <span className="outline-none text-[#518AB9] font-semibold text-[17px] no-underline">
+              {title}
+            </span>
+          </Link>
+        ) : typeof title === "string" ? (
+          <p className="text-[#518AB9] font-semibold text-[17px]">
+            <span
+              contentEditable={editMode}
+              className="outline-none"
+
+              onBlur={(e) => onArtifactChange("title", e.target.innerText)}
+
+            >
+              {title}
+            </span>
+          </p>
+        ) : (
+          title
+        )}
+
+        <p>
+          {!!repoName && (
+
+            <span
+              contentEditable={editMode}
+              onBlur={(e) => onArtifactChange("repo_name", e.target.innerText)}
+              className="text-sm font-medium pr-4 outline-none"
+
+            >
+
+              {repoName}
+            </span>
+
+          )}
+          {!!updatedAt && (
+            <span className="my-1 text-[#1A2636] text-xs italic">
+              Last updated: {updatedAt}
+            </span>
+          )}
+        </p>
+
+        {message && (
+          <div
+            onBlur={(e) =>
+
+              onArtifactChange("message", editorRef.current?.getMarkdown())
+            }
+            className="text-sm text-[#1A2636] outline-none -m-3 "
+          >
+            <MarkDownEditor
+              editorRef={editorRef}
+              markdown={message}
+              readOnly={!editMode}
+              hideToolbar={true}
+            />
+          </div>
+        )}
+        <div className="flex gap-4 flex-wrap items-center mt-2">
+          {tags.length > 0 &&
+            tags.map((tag: any) => (
+              <div
+                key={tag}
+                className="bg-[#C9DBE9] w-fit px-2 py-1 rounded-2xl text-[10px] text-[#1A2636] "
+              >
+                {tag}
+              </div>
+            ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const DesignDocumentBody = () => {
+  const dispatch = useDispatch();
+  const selectedDesignDoc = useSelector(
+    (state: any) => state?.packageCreatorSlice?.selectedDesignDoc,
+  );
+  return (
+    <>
+      <p className="text-[17px] font-semibold text-[#1A2636]">
+        Select Files from Google Drive
+      </p>
+      <div className="my-4">
+        {selectedDesignDoc.length > 0 &&
+          selectedDesignDoc.map((doc: any) => (
+            <div key={doc?.id} className="flex items-center gap-5">
+              <div className="h-5 w-5">
+                <img
+                  src={doc?.iconUrl}
+                  style={{ height: "auto", width: "100%" }}
+                  alt={doc?.name}
+                />
+              </div>
+              <div className="flex items-center w-full justify-between">
+                <div>
+                  <p className="text-sm text-[#1A2636]">{doc?.name}</p>
+                  <a
+                    className="text-sm text-[#518AB9]"
+                    target="_blank"
+                    href={doc?.url}
+                  >
+                    {doc?.url}
+                  </a>
+                </div>
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    dispatch(
+                      setSelectedDesignDoc(
+                        selectedDesignDoc.filter((i: any) => i?.id !== doc?.id),
+                      ),
+                    )
+                  }
+                >
+                  <Close fontSize="small" />
+                </IconButton>
+              </div>
+            </div>
+          ))}
+      </div>
+      <GoogleDrivePicker
+        onPick={(data) => {
+          const newDocs = data?.docs.filter(
+            (doc: any) =>
+              !selectedDesignDoc.some(
+                (selectedDoc: any) => selectedDoc.id === doc.id,
+              ),
+          );
+          dispatch(setSelectedDesignDoc([...selectedDesignDoc, ...newDocs]));
+        }}
+      />
+    </>
+  );
+};
+
+
+```
+
+
+## !!steps 6
 
 !duration 100
 
 ```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx
-import { useFetchCodeCommits } from "@/hooks/useApi";
-import useAuth from "@/hooks/useAuth";
-import { areArraysSimilar } from "@/store/generalSlice";
-import {
-  setPackagingResult,
-  setSelectedCommitsForRepos,
-} from "@/store/packageCreatorSlice";
-import { combineEvaluations } from "@/utils/generalFunctions";
+"use client";
+import { setSelectedDesignDoc } from "@/store/packageCreatorSlice";
 import { MDXEditorMethods } from "@mdxeditor/editor";
-import Add from "@mui/icons-material/Add";
-import { Divider } from "@mui/material";
-import moment from "moment";
-import { usePathname, useSearchParams } from "next/navigation";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import Close from "@mui/icons-material/Close";
+import { Checkbox, IconButton, Link } from "@mui/material";
+import { useMemo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import Button from "../ui/Button";
-import { CodeIcon } from "../ui/Icons";
-import ContributionSkeleton from "../ui/loaders/ContributionSkeleton";
 import MarkDownEditor from "../ui/MarkDownEditor";
-import { AllCommits } from "./CommitsTable";
-import DraftAccordion from "./DraftAccordion";
-import { Artifact, Opportunity, Strength } from "./DraftComponents";
+import GoogleDrivePicker from "./GoogleDrivePicker";
 
-const Output = ({
-  expanded,
-  codeReview,
-  editMode,
-  overallEvaluationSummary,
+export const Strength = ({
+  strengths,
+  editMode = false,
+  onDataChange = () => {},
 }: {
-  expanded: boolean;
-  codeReview: any;
+  strengths: any[];
   editMode: boolean;
-  overallEvaluationSummary: any;
-}) => {
-  const auth = useAuth();
-  const { IS_WAYFAIR } = auth;
-  const [showAddMore, setShowAddMore] = useState(false);
-  const searchParams = useSearchParams();
-  const userId = searchParams?.get("user_id");
+  onDataChange: any;
+}) => (
+  <div
+    className={`w-full border-1 ${
+      editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+    } rounded-xl p-4`}
+  >
+    <p className="text-[17px] font-semibold text-[#1A2636]">Strengths</p>
+    <ul className="text-sm font-normal list-disc px-4">
+      {strengths?.map((str: any, index: number) => (
+        <li key={str?.strength + index}>
+          <span
+            contentEditable={editMode}
+            className="font-semibold outline-none"
+
+            onBlur={(e) =>
+              editMode && onDataChange(index, "strength", e.target.innerText)
+            }
+
+          >
+            {str?.strength}
+          </span>
+          :{" "}
+          <span
+            contentEditable={editMode}
+
+            dangerouslySetInnerHTML={{ __html: str?.description }}
+
+            className="outline-none"
+            onBlur={(e) =>
+
+// !focus(1:1)
+// !focus(1:1)
+            }
+
+          >
+            {str?.description}
+          </span>
+
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export const Opportunity = ({
+  opportunities,
+  editMode = false,
+  onDataChange = () => {},
+}: {
+  opportunities: any[];
+  editMode: boolean;
+  onDataChange: any;
+}) => (
+  <div
+    className={`w-full border-1 ${
+      editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+    } rounded-xl p-4`}
+  >
+    <p className="text-[17px] font-semibold text-[#1A2636]">Opportunities</p>
+    <ul className="text-sm font-normal list-disc px-4">
+      {opportunities?.map((opp: any, index: number) => (
+        <li key={opp?.opportunity + index}>
+          <span
+            contentEditable={editMode}
+            className="font-semibold outline-none"
+            onBlur={(e) =>
+
+              onDataChange(index, "opportunity", e.target.innerText)
+
+            }
+          >
+            {opp?.opportunity}
+          </span>
+          :{" "}
+          <span
+
+            contentEditable={editMode}
+            className="outline-none "
+            onBlur={(e) =>
+
+              onDataChange(index, "description", e.target.innerText)
+
+            }
+
+          >
+            {opp?.description}
+          </span>
+
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export const Artifact = ({
+  viewOnly = false,
+  tags = [],
+  url = "",
+  updatedAt = "",
+  message = "",
+  onCheck = () => {},
+  checked = false,
+  value,
+  title = null,
+  no = 0,
+  artifactTitle = "Artifact",
+  editMode = false,
+  onArtifactChange = () => {},
+  repoName = "",
+
+}: any) => {
   const editorRef = useRef<MDXEditorMethods>(null);
-  const selectedRepos: string[] = useSelector(
-    (state: any) => state.packageCreatorSlice?.selectedRepos,
-  );
-  const selectedCommits: string[] = useSelector(
-    (state: any) => state.packageCreatorSlice?.selectedCommits,
-  );
-  const pathname = usePathname();
-  const dispatch = useDispatch();
-  const codeCommitsQuery = useFetchCodeCommits({
-    enabled: false,
-    queryKey: [userId, [selectedRepos]],
-    params: {
-      filter: JSON.stringify({
-        employee_id: userId,
-        repo_id: selectedRepos,
-        selected_commits: selectedCommits,
-      }),
-      sort: JSON.stringify({ sortDir: "desc" }),
-    },
-  });
-  const codeEvaluation = !pathname?.includes("/package-creator")
-    ? codeReview
-    : useSelector((state: any) => state?.packageCreatorSlice?.packagingResult)
-        ?.code_evaluation;
-
-  const packagingResult = useSelector(
-    (state: any) => state?.packageCreatorSlice?.packagingResult,
-  );
-  const overallEvaluation = !pathname?.includes("/package-creator")
-    ? overallEvaluationSummary
-    : useSelector((state: any) => state?.packageCreatorSlice?.packagingResult)
-        ?.overall_evaluation?.code_evaluation;
-
-  const onDataChange = (
-    type: "opportunities" | "strengths",
-    listIndex: number,
-    key: string,
-    value: string,
-  ) => {
-    const updatedData = {
-      ...packagingResult?.overall_evaluation?.code_evaluation?.evaluation,
-      [type]: packagingResult?.overall_evaluation?.code_evaluation?.evaluation[
-        type
-      ].map((listData: any, lI: number) =>
-        lI === listIndex ? { ...listData, [key]: value } : listData,
-      ),
-    };
-
-    dispatch(
-      setPackagingResult({
-        ...packagingResult,
-        overall_evaluation: {
-          ...packagingResult?.overall_evaluation,
-          code_evaluation: {
-            ...packagingResult?.overall_evaluation?.code_evaluation,
-            evaluation: updatedData,
-          },
-        },
-      }),
-    );
-  };
-  const onArtifactChange = (mainIndex: number, key: string, value: string) => {
-    dispatch(
-      setPackagingResult({
-        ...packagingResult,
-        code_evaluation: packagingResult?.code_evaluation?.map(
-          (ev: any, mI: number) =>
-            mI === mainIndex
-              ? {
-                  ...ev,
-                  evaluations: [
-                    {
-                      ...ev?.evaluations[0],
-                      [key]: value,
-                    },
-                  ],
-                }
-              : ev,
-        ),
-      }),
-    );
-  };
-
-  useEffect(() => {
-    if (
-      codeEvaluation?.length > 0 &&
-      selectedCommits?.length === 0 &&
-      pathname?.includes("/package-creator") &&
-      !IS_WAYFAIR
-    ) {
-      dispatch(
-        setSelectedCommitsForRepos(
-          codeEvaluation?.map(({ evaluations }: any) => evaluations[0]?.hash),
-        ),
-      );
-    }
-  }, [codeEvaluation]);
-
-  const handleSummaryChange = (e: any) => {
-    dispatch(
-      setPackagingResult({
-        ...packagingResult,
-        overall_evaluation: {
-          ...packagingResult?.overall_evaluation,
-          code_evaluation: {
-            ...packagingResult?.overall_evaluation?.code_evaluation,
-            summary: editorRef.current?.getMarkdown(),
-          },
-        },
-      }),
-    );
-  };
-
-  const handleCommitCheck = (value: string) => {
-    dispatch(
-      setSelectedCommitsForRepos(
-        selectedCommits?.includes(value)
-          ? selectedCommits?.filter((v: string) => v !== value)
-          : [...selectedCommits, value],
-      ),
-    );
-  };
-
-  useMemo(
-    () => editorRef.current?.setMarkdown(overallEvaluation?.summary),
-    [overallEvaluation?.summary],
-  );
-
-// !focus(1:13)
-// !mark(1:53) red
-  const replaceHashWithURL = (opportunities: any) => {
-    let evalObj: any = {};
-    codeEvaluation.forEach(({ evaluations }: any) => {
-      evalObj[evaluations[0]?.hash] = evaluations[0]?.hash_url;
-    });
-
-    if (typeof opportunities === "string") {
-      Object.keys(evalObj).forEach((key) => {
-        if (opportunities?.includes(key.slice(0, 7))) {
-          opportunities = opportunities.replace(
-            key.slice(0, 7),
-            `[${key.slice(0, 7)}](${evalObj[key]})`,
-          );
-        } else if (opportunities?.includes(key.slice(0, 6))) {
-          opportunities = opportunities.replace(
-            key.slice(0, 6),
-            `[${key.slice(0, 7)}](${evalObj[key]})`,
-          );
-        }
-      });
-
-      return opportunities;
-    }
-
-    const newOpp = opportunities?.map((opp: any) => {
-      let updatedDescription = opp?.description;
-
-      Object.keys(evalObj).forEach((key) => {
-        if (updatedDescription?.includes(key.slice(0, 7))) {
-          updatedDescription = updatedDescription.replace(
-            key.slice(0, 7),
-            `<a target="_blank" contenteditable="false" style="cursor: pointer; background-color: #C9DBE9; width: fit-content; padding: 0rem 0.75rem; border-radius: 1rem; margin: auto; font-size: 0.875rem; color: #1A2636;" href=${
-              evalObj[key]
-            }>${key.slice(0, 7)}</a>`,
-          );
-        } else if (updatedDescription?.includes(key.slice(0, 6))) {
-          updatedDescription = updatedDescription.replace(
-            key.slice(0, 6),
-            `<a target="_blank" contenteditable="false" style="cursor: pointer; background-color: #C9DBE9; width: fit-content; padding: 0rem 0.75rem; border-radius: 1rem; margin: auto; font-size: 0.875rem; color: #1A2636;" href=${
-              evalObj[key]
-            }>${key.slice(0, 7)}</a>`,
-          );
-        }
-      });
-
-      return {
-        ...opp,
-        description: updatedDescription,
-      };
-    });
-    return newOpp;
-  };
-
+  useMemo(() => editorRef.current?.setMarkdown(message), [message]);
   return (
-    <div>
+    <div className="my-2">
+      <div className="flex gap-2 items-center">
+        {!viewOnly && (
+          <Checkbox
+            value={value}
+            onChange={() => onCheck(value)}
+            sx={{
+              "&.Mui-checked": {
+                color: "#4ED9EF",
+              },
+              color: "#29324166",
+              padding: 0,
+            }}
+            checked={checked}
+          />
+        )}
+        <p className="text-[#1A2636] text-[17px] font-semibold">
+          {artifactTitle} {no && no}
+        </p>
+      </div>
       <div
-        className={`text-sm text-[#1A2636] p-1 ${
-          editMode
-            ? "rounded bg-blue-50 ring-1 ring-blue-200 border-half border-blue-100 outline-none"
-            : " border-1 rounded-xl"
+        className={`my-2 ${
+          editMode && "bg-blue-50 border-1 border-blue-100 p-3 rounded"
         } `}
-        onBlur={handleSummaryChange}
       >
-        <MarkDownEditor
-          editorRef={editorRef}
-          markdown={
-            overallEvaluation?.summary?.length > 0
-              ? replaceHashWithURL(overallEvaluation?.summary)
-              ? overallEvaluation?.summary
-              : "No summary found"
-          }
-          readOnly={!editMode}
-          hideToolbar={true}
-        />
-      </div>
+        {!!url && !editMode ? (
+          <Link href={url} target="_blank" style={{ textDecoration: "none" }}>
+            <span className="outline-none text-[#518AB9] font-semibold text-[17px] no-underline">
+              {title}
+            </span>
+          </Link>
+        ) : typeof title === "string" ? (
+          <p className="text-[#518AB9] font-semibold text-[17px]">
+            <span
+              contentEditable={editMode}
+              className="outline-none"
 
-      <div
-        className={`flex ${
-          !pathname?.includes("/package-creator")
-            ? "flex-wrap"
-            : "items-stretch"
-        }  justify-between gap-4 my-4`}
-      >
-        <Strength
-          strengths={replaceHashWithURL(
-            overallEvaluation?.evaluation?.strengths,
+              onBlur={(e) => onArtifactChange("title", e.target.innerText)}
+
+            >
+              {title}
+            </span>
+          </p>
+        ) : (
+          title
+        )}
+
+        <p>
+          {!!repoName && (
+
+            <span
+              contentEditable={editMode}
+              onBlur={(e) => onArtifactChange("repo_name", e.target.innerText)}
+              className="text-sm font-medium pr-4 outline-none"
+
+            >
+
+              {repoName}
+            </span>
+
           )}
-          strengths={overallEvaluation?.evaluation?.strengths}
-          editMode={editMode}
-          onDataChange={(index: number, k: string, v: string) =>
-            onDataChange("strengths", index, k, v)
-          }
-        />
-        <Opportunity
-          opportunities={replaceHashWithURL(
-            overallEvaluation?.evaluation?.opportunities,
+          {!!updatedAt && (
+            <span className="my-1 text-[#1A2636] text-xs italic">
+              Last updated: {updatedAt}
+            </span>
           )}
-          opportunities={overallEvaluation?.evaluation?.opportunities}
-          editMode={editMode}
-          onDataChange={(index: number, k: string, v: string) =>
-            onDataChange("opportunities", index, k, v)
-          }
-        />
+        </p>
+
+        {message && (
+          <div
+            onBlur={(e) =>
+
+              onArtifactChange("message", editorRef.current?.getMarkdown())
+            }
+            className="text-sm text-[#1A2636] outline-none -m-3 "
+          >
+            <MarkDownEditor
+              editorRef={editorRef}
+              markdown={message}
+              readOnly={!editMode}
+              hideToolbar={true}
+            />
+          </div>
+        )}
+        <div className="flex gap-4 flex-wrap items-center mt-2">
+          {tags.length > 0 &&
+            tags.map((tag: any) => (
+              <div
+                key={tag}
+                className="bg-[#C9DBE9] w-fit px-2 py-1 rounded-2xl text-[10px] text-[#1A2636] "
+              >
+                {tag}
+              </div>
+            ))}
+        </div>
       </div>
-      {codeEvaluation?.length > 0 &&
-        codeEvaluation
-          .flatMap((i: any, mainIndex: number) =>
-            !i.evaluations?.length ? [] : { ...i, mainIndex },
-          )
-          ?.map(({ evaluations, mainIndex }: any, index: any) => {
-            return (
-              <div key={evaluations[0]?.hash}>
-                <Artifact
-                  editMode={editMode}
-                  tags={evaluations[0]?.tags}
-                  message={evaluations[0]?.artifact_summary_string}
-                  value={evaluations[0]?.hash}
-                  repoName={evaluations[0]?.repo_name}
-                  title={
-                    <span className="text-[#518AB9] font-semibold text-[17px]">
-                      Commit{" "}
-                      <span
-                        contentEditable={editMode}
-                        className="outline-none"
-                        onBlur={(e) =>
-                          onArtifactChange(
-                            mainIndex,
-                            "hash",
-                            e.target.innerText,
-                          )
-                        }
-                      >
-                        {evaluations[0]?.hash?.slice(0, 7)}
-                      </span>
-                      :{" "}
-                      <span
-                        contentEditable={editMode}
-                        className="outline-none"
-                        onBlur={(e) =>
-                          onArtifactChange(
-                            mainIndex,
-                            "commit_title",
-                            e.target.innerText,
-                          )
-                        }
-                      >
-                        {evaluations[0]?.commit_title}
-                      </span>
-        codeEvaluation?.flatMap(({ evaluations }: any, index: any) => {
-          return !evaluations?.length ? (
-            []
-          ) : (
-            <div key={evaluations[0]?.hash}>
-              <Artifact
-                editMode={editMode}
-                tags={evaluations[0]?.tags}
-                message={evaluations[0]?.artifact_summary_string}
-                value={evaluations[0]?.hash}
-                repoName={evaluations[0]?.repo_name}
-                title={
-                  <span className="text-[#518AB9] font-semibold text-[17px]">
-                    Commit{" "}
-                    <span
-                      contentEditable={editMode}
-                      className="outline-none"
-                      onBlur={(e) =>
-                        onArtifactChange(index, "hash", e.target.innerText)
-                      }
-                    >
-                      {evaluations[0]?.hash?.slice(0, 7)}
-                    </span>
-                  }
-                  viewOnly={
-                    IS_WAYFAIR
-                      ? true
-                      : pathname?.includes("/package-creator")
-                      ? !expanded
-                      : true
-                  }
-                  checked={selectedCommits?.includes(evaluations[0]?.hash)}
-                  onCheck={handleCommitCheck}
-                  no={index + 1}
-                  url={evaluations[0]?.hash_url}
-                  repoLink={evaluations[0]?.hash_url?.split("/commit")[0]}
-                  updatedAt={evaluations[0]?.committed_at}
-                  onArtifactChange={(key: string, value: string) =>
-                    onArtifactChange(
-                      mainIndex,
-                      key === "message" ? "artifact_summary_string" : key,
-                      value,
+    </div>
+  );
+};
+
+export const DesignDocumentBody = () => {
+  const dispatch = useDispatch();
+  const selectedDesignDoc = useSelector(
+    (state: any) => state?.packageCreatorSlice?.selectedDesignDoc,
+  );
+  return (
+    <>
+      <p className="text-[17px] font-semibold text-[#1A2636]">
+        Select Files from Google Drive
+      </p>
+      <div className="my-4">
+        {selectedDesignDoc.length > 0 &&
+          selectedDesignDoc.map((doc: any) => (
+            <div key={doc?.id} className="flex items-center gap-5">
+              <div className="h-5 w-5">
+                <img
+                  src={doc?.iconUrl}
+                  style={{ height: "auto", width: "100%" }}
+                  alt={doc?.name}
+                />
+              </div>
+              <div className="flex items-center w-full justify-between">
+                <div>
+                  <p className="text-sm text-[#1A2636]">{doc?.name}</p>
+                  <a
+                    className="text-sm text-[#518AB9]"
+                    target="_blank"
+                    href={doc?.url}
+                  >
+                    {doc?.url}
+                  </a>
+                </div>
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    dispatch(
+                      setSelectedDesignDoc(
+                        selectedDesignDoc.filter((i: any) => i?.id !== doc?.id),
+                      ),
                     )
                   }
-                />
-                {index !== codeEvaluation?.length - 1 && (
-                  <Divider sx={{ margin: "20px 0px" }} />
-                )}
+                >
+                  <Close fontSize="small" />
+                </IconButton>
               </div>
-            );
-          })}
-                    :{" "}
-                    <span
-                      contentEditable={editMode}
-                      className="outline-none"
-                      onBlur={(e) =>
-                        onArtifactChange(
-                          index,
-                          "commit_title",
-                          e.target.innerText,
-                        )
-                      }
-                    >
-                      {evaluations[0]?.commit_title}
-                    </span>
-                  </span>
-                }
-                viewOnly={
-                  IS_WAYFAIR
-                    ? true
-                    : pathname?.includes("/package-creator")
-                    ? !expanded
-                    : true
-                }
-                checked={selectedCommits?.includes(evaluations[0]?.hash)}
-                onCheck={handleCommitCheck}
-                no={index + 1}
-                url={evaluations[0]?.hash_url}
-                updatedAt={evaluations[0]?.committed_at}
-                onArtifactChange={(key: string, value: string) =>
-                  onArtifactChange(
-                    index,
-                    key === "message" ? "artifact_summary_string" : key,
-                    value,
-                  )
-                }
-              />
-              {index !== codeEvaluation?.length - 1 && (
-                <Divider sx={{ margin: "20px 0px" }} />
-              )}
             </div>
+          ))}
+      </div>
+      <GoogleDrivePicker
+        onPick={(data) => {
+          const newDocs = data?.docs.filter(
+            (doc: any) =>
+              !selectedDesignDoc.some(
+                (selectedDoc: any) => selectedDoc.id === doc.id,
+              ),
           );
-        })}
-
-      {expanded && pathname?.includes("/package-creator") && (
-        <>
-          {!showAddMore && !IS_WAYFAIR ? (
-            <Button
-              variant="text"
-              sx={{ mt: 2, textDecoration: "underline" }}
-              onClick={() => {
-                codeCommitsQuery.refetch();
-                setShowAddMore(true);
-              }}
-              startIcon={<Add />}
-            >
-              Add more artifacts
-            </Button>
-          ) : (
-            <div className="mt-6">
-              {" "}
-              <AllCommits />
-            </div>
-          )}
-          {showAddMore && !IS_WAYFAIR && (
-            <>
-              <div className="border-2 w-full border-[#C9DBE9] my-4"></div>
-              <div>
-                <p className="text-[17px] font-semibold text-[#1A2636] ">
-                  Add more artifacts:
-                </p>
-                <p className="text-[#1A2636] text-sm ">
-                  Select from below list or upload more artifacts using URL
-                  links.
-                </p>
-              </div>
-              {codeCommitsQuery.data?.length && (
-                <div className="max-h-[400px] overflow-auto my-4 ">
-                  {codeCommitsQuery.data?.map((commit: any, index: number) => (
-                    <Fragment key={commit?.id}>
-                      <Artifact
-                        url={commit?.url}
-                        updatedAt={moment(commit?.committed_at).format(
-                          "MM/DD/YYYY, hh:mmA",
-                        )}
-                        message={commit?.commit_message}
-                        checked={selectedCommits?.includes(commit?.commit_sha)}
-                        value={commit?.commit_sha}
-                        onCheck={handleCommitCheck}
-                        repoName={commit?.repo_name || ""}
-                        no={
-                          !!codeEvaluation?.artifacts?.length
-                            ? codeEvaluation?.artifacts?.length + index + 1
-                            : index + 1
-                        }
-                        title={`Commit ${commit?.commit_sha?.slice(0, 7)}: ${
-                          commit?.commit_message
-                        }`}
-                      />
-                      {index !== codeCommitsQuery.data?.length - 1 && (
-                        <Divider />
-                      )}
-                    </Fragment>
-                  ))}
-                </div>
-              )}
-              {codeCommitsQuery.isFetching && <ContributionSkeleton />}
-            </>
-          )}
-        </>
-      )}
-    </div>
-  );
-};
-
-const CodeContributionDraft = ({
-  codeReview = null,
-  overallEvaluationSummary = null,
-  editMode = false,
-  onRetry = () => {},
-}: {
-  codeReview?: any[] | null;
-  overallEvaluationSummary?: any[] | null;
-  editMode?: boolean;
-  onRetry?: Function;
-}) => {
-  const packagingResult = useSelector(
-    (state: any) => state?.packageCreatorSlice?.packagingResult,
-  );
-  const stalePackageIds = useSelector(
-    (state: any) => state?.packageCreatorSlice?.stalePackageIds,
-  );
-  const selectedCommits: string[] = useSelector(
-    (state: any) => state.packageCreatorSlice?.selectedCommits,
-  );
-  const [loading, setLoading] = useState(false);
-
-  return (
-    <div>
-      <DraftAccordion
-        icon={<CodeIcon />}
-        title="Code Contribution"
-        collapsedBody={
-          <Output
-            editMode={editMode}
-            expanded={false}
-            codeReview={codeReview}
-            overallEvaluationSummary={overallEvaluationSummary}
-          />
-        }
-        expandedBody={
-          <Output
-            editMode={editMode}
-            expanded={true}
-            codeReview={codeReview}
-            overallEvaluationSummary={overallEvaluationSummary}
-          />
-        }
-        copyText={{
-          artifacts: combineEvaluations(packagingResult?.code_evaluation)
-            ?.artifacts,
-          ...packagingResult?.overall_evaluation?.code_evaluation,
+          dispatch(setSelectedDesignDoc([...selectedDesignDoc, ...newDocs]));
         }}
-        onRetry={() => {
-          onRetry({
-            status: "draft",
-            isRegenerate: true,
-            regenerate_section: "code_evaluation",
-            setLoading: (b: boolean) => setLoading(b),
-          });
-        }}
-        isRetrying={loading}
-        disableRegenerate={areArraysSimilar(
-          selectedCommits,
-          stalePackageIds?.selectedCommits,
-        )}
       />
-    </div>
+    </>
   );
 };
-
-export default CodeContributionDraft;
 
 
 ```
 
 
-## !!steps after
+## !!steps 7
 
-!duration 300
+!duration 200
 
 ```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx
-import { useFetchCodeCommits } from "@/hooks/useApi";
-import useAuth from "@/hooks/useAuth";
-import { areArraysSimilar } from "@/store/generalSlice";
-import {
-  setPackagingResult,
-  setSelectedCommitsForRepos,
-} from "@/store/packageCreatorSlice";
-import { combineEvaluations } from "@/utils/generalFunctions";
+"use client";
+import { setSelectedDesignDoc } from "@/store/packageCreatorSlice";
 import { MDXEditorMethods } from "@mdxeditor/editor";
-import Add from "@mui/icons-material/Add";
-import { Divider } from "@mui/material";
-import moment from "moment";
-import { usePathname, useSearchParams } from "next/navigation";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import Close from "@mui/icons-material/Close";
+import { Checkbox, IconButton, Link } from "@mui/material";
+import { useMemo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import Button from "../ui/Button";
-import { CodeIcon } from "../ui/Icons";
-import ContributionSkeleton from "../ui/loaders/ContributionSkeleton";
 import MarkDownEditor from "../ui/MarkDownEditor";
-import { AllCommits } from "./CommitsTable";
-import DraftAccordion from "./DraftAccordion";
-import { Artifact, Opportunity, Strength } from "./DraftComponents";
+import GoogleDrivePicker from "./GoogleDrivePicker";
 
-const Output = ({
-  expanded,
-  codeReview,
-  editMode,
-  overallEvaluationSummary,
+export const Strength = ({
+  strengths,
+  editMode = false,
+  onDataChange = () => {},
 }: {
-  expanded: boolean;
-  codeReview: any;
+  strengths: any[];
   editMode: boolean;
-  overallEvaluationSummary: any;
-}) => {
-  const auth = useAuth();
-  const { IS_WAYFAIR } = auth;
-  const [showAddMore, setShowAddMore] = useState(false);
-  const searchParams = useSearchParams();
-  const userId = searchParams?.get("user_id");
+  onDataChange: any;
+}) => (
+  <div
+    className={`w-full border-1 ${
+      editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+    } rounded-xl p-4`}
+  >
+    <p className="text-[17px] font-semibold text-[#1A2636]">Strengths</p>
+    <ul className="text-sm font-normal list-disc px-4">
+      {strengths?.map((str: any, index: number) => (
+        <li key={str?.strength + index}>
+          <span
+            contentEditable={editMode}
+            className="font-semibold outline-none"
+
+            onBlur={(e) =>
+              editMode && onDataChange(index, "strength", e.target.innerText)
+            }
+
+          >
+            {str?.strength}
+          </span>
+          :{" "}
+          <span
+            contentEditable={editMode}
+
+            dangerouslySetInnerHTML={{ __html: str?.description }}
+
+            className="outline-none"
+            onBlur={(e) =>
+
+// !mark(1:1) green
+              editMode && onDataChange(index, "description", e.target.innerText)
+
+            }
+
+          >
+            {str?.description}
+          </span>
+
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export const Opportunity = ({
+  opportunities,
+  editMode = false,
+  onDataChange = () => {},
+}: {
+  opportunities: any[];
+  editMode: boolean;
+  onDataChange: any;
+}) => (
+  <div
+    className={`w-full border-1 ${
+      editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+    } rounded-xl p-4`}
+  >
+    <p className="text-[17px] font-semibold text-[#1A2636]">Opportunities</p>
+    <ul className="text-sm font-normal list-disc px-4">
+      {opportunities?.map((opp: any, index: number) => (
+        <li key={opp?.opportunity + index}>
+          <span
+            contentEditable={editMode}
+            className="font-semibold outline-none"
+            onBlur={(e) =>
+
+              onDataChange(index, "opportunity", e.target.innerText)
+
+            }
+          >
+            {opp?.opportunity}
+          </span>
+          :{" "}
+          <span
+
+            contentEditable={editMode}
+            className="outline-none "
+            onBlur={(e) =>
+
+              onDataChange(index, "description", e.target.innerText)
+
+            }
+
+          >
+            {opp?.description}
+          </span>
+
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export const Artifact = ({
+  viewOnly = false,
+  tags = [],
+  url = "",
+  updatedAt = "",
+  message = "",
+  onCheck = () => {},
+  checked = false,
+  value,
+  title = null,
+  no = 0,
+  artifactTitle = "Artifact",
+  editMode = false,
+  onArtifactChange = () => {},
+  repoName = "",
+
+}: any) => {
   const editorRef = useRef<MDXEditorMethods>(null);
-  const selectedRepos: string[] = useSelector(
-    (state: any) => state.packageCreatorSlice?.selectedRepos,
-  );
-  const selectedCommits: string[] = useSelector(
-    (state: any) => state.packageCreatorSlice?.selectedCommits,
-  );
-  const pathname = usePathname();
-  const dispatch = useDispatch();
-  const codeCommitsQuery = useFetchCodeCommits({
-    enabled: false,
-    queryKey: [userId, [selectedRepos]],
-    params: {
-      filter: JSON.stringify({
-        employee_id: userId,
-        repo_id: selectedRepos,
-        selected_commits: selectedCommits,
-      }),
-      sort: JSON.stringify({ sortDir: "desc" }),
-    },
-  });
-  const codeEvaluation = !pathname?.includes("/package-creator")
-    ? codeReview
-    : useSelector((state: any) => state?.packageCreatorSlice?.packagingResult)
-        ?.code_evaluation;
-
-  const packagingResult = useSelector(
-    (state: any) => state?.packageCreatorSlice?.packagingResult,
-  );
-  const overallEvaluation = !pathname?.includes("/package-creator")
-    ? overallEvaluationSummary
-    : useSelector((state: any) => state?.packageCreatorSlice?.packagingResult)
-        ?.overall_evaluation?.code_evaluation;
-
-  const onDataChange = (
-    type: "opportunities" | "strengths",
-    listIndex: number,
-    key: string,
-    value: string,
-  ) => {
-    const updatedData = {
-      ...packagingResult?.overall_evaluation?.code_evaluation?.evaluation,
-      [type]: packagingResult?.overall_evaluation?.code_evaluation?.evaluation[
-        type
-      ].map((listData: any, lI: number) =>
-        lI === listIndex ? { ...listData, [key]: value } : listData,
-      ),
-    };
-
-    dispatch(
-      setPackagingResult({
-        ...packagingResult,
-        overall_evaluation: {
-          ...packagingResult?.overall_evaluation,
-          code_evaluation: {
-            ...packagingResult?.overall_evaluation?.code_evaluation,
-            evaluation: updatedData,
-          },
-        },
-      }),
-    );
-  };
-  const onArtifactChange = (mainIndex: number, key: string, value: string) => {
-    dispatch(
-      setPackagingResult({
-        ...packagingResult,
-        code_evaluation: packagingResult?.code_evaluation?.map(
-          (ev: any, mI: number) =>
-            mI === mainIndex
-              ? {
-                  ...ev,
-                  evaluations: [
-                    {
-                      ...ev?.evaluations[0],
-                      [key]: value,
-                    },
-                  ],
-                }
-              : ev,
-        ),
-      }),
-    );
-  };
-
-  useEffect(() => {
-    if (
-      codeEvaluation?.length > 0 &&
-      selectedCommits?.length === 0 &&
-      pathname?.includes("/package-creator") &&
-      !IS_WAYFAIR
-    ) {
-      dispatch(
-        setSelectedCommitsForRepos(
-          codeEvaluation?.map(({ evaluations }: any) => evaluations[0]?.hash),
-        ),
-      );
-    }
-  }, [codeEvaluation]);
-
-  const handleSummaryChange = (e: any) => {
-    dispatch(
-      setPackagingResult({
-        ...packagingResult,
-        overall_evaluation: {
-          ...packagingResult?.overall_evaluation,
-          code_evaluation: {
-            ...packagingResult?.overall_evaluation?.code_evaluation,
-            summary: editorRef.current?.getMarkdown(),
-          },
-        },
-      }),
-    );
-  };
-
-  const handleCommitCheck = (value: string) => {
-    dispatch(
-      setSelectedCommitsForRepos(
-        selectedCommits?.includes(value)
-          ? selectedCommits?.filter((v: string) => v !== value)
-          : [...selectedCommits, value],
-      ),
-    );
-  };
-
-  useMemo(
-    () => editorRef.current?.setMarkdown(overallEvaluation?.summary),
-    [overallEvaluation?.summary],
-  );
-
+  useMemo(() => editorRef.current?.setMarkdown(message), [message]);
   return (
-    <div>
+    <div className="my-2">
+      <div className="flex gap-2 items-center">
+        {!viewOnly && (
+          <Checkbox
+            value={value}
+            onChange={() => onCheck(value)}
+            sx={{
+              "&.Mui-checked": {
+                color: "#4ED9EF",
+              },
+              color: "#29324166",
+              padding: 0,
+            }}
+            checked={checked}
+          />
+        )}
+        <p className="text-[#1A2636] text-[17px] font-semibold">
+          {artifactTitle} {no && no}
+        </p>
+      </div>
       <div
-        className={`text-sm text-[#1A2636] p-1 ${
-          editMode
-            ? "rounded bg-blue-50 ring-1 ring-blue-200 border-half border-blue-100 outline-none"
-            : " border-1 rounded-xl"
+        className={`my-2 ${
+          editMode && "bg-blue-50 border-1 border-blue-100 p-3 rounded"
         } `}
-        onBlur={handleSummaryChange}
       >
-        <MarkDownEditor
-          editorRef={editorRef}
-          markdown={
-            overallEvaluation?.summary?.length > 0
-              ? replaceHashWithURL(overallEvaluation?.summary)
-              ? overallEvaluation?.summary
-              : "No summary found"
-          }
-          readOnly={!editMode}
-          hideToolbar={true}
-        />
-      </div>
+        {!!url && !editMode ? (
+          <Link href={url} target="_blank" style={{ textDecoration: "none" }}>
+            <span className="outline-none text-[#518AB9] font-semibold text-[17px] no-underline">
+              {title}
+            </span>
+          </Link>
+        ) : typeof title === "string" ? (
+          <p className="text-[#518AB9] font-semibold text-[17px]">
+            <span
+              contentEditable={editMode}
+              className="outline-none"
 
-      <div
-        className={`flex ${
-          !pathname?.includes("/package-creator")
-            ? "flex-wrap"
-            : "items-stretch"
-        }  justify-between gap-4 my-4`}
-      >
-        <Strength
-          strengths={replaceHashWithURL(
-            overallEvaluation?.evaluation?.strengths,
+              onBlur={(e) => onArtifactChange("title", e.target.innerText)}
+
+            >
+              {title}
+            </span>
+          </p>
+        ) : (
+          title
+        )}
+
+        <p>
+          {!!repoName && (
+
+            <span
+              contentEditable={editMode}
+              onBlur={(e) => onArtifactChange("repo_name", e.target.innerText)}
+              className="text-sm font-medium pr-4 outline-none"
+
+            >
+
+              {repoName}
+            </span>
+
           )}
-          strengths={overallEvaluation?.evaluation?.strengths}
-          editMode={editMode}
-          onDataChange={(index: number, k: string, v: string) =>
-            onDataChange("strengths", index, k, v)
-          }
-        />
-        <Opportunity
-          opportunities={replaceHashWithURL(
-            overallEvaluation?.evaluation?.opportunities,
+          {!!updatedAt && (
+            <span className="my-1 text-[#1A2636] text-xs italic">
+              Last updated: {updatedAt}
+            </span>
           )}
-          opportunities={overallEvaluation?.evaluation?.opportunities}
-          editMode={editMode}
-          onDataChange={(index: number, k: string, v: string) =>
-            onDataChange("opportunities", index, k, v)
-          }
-        />
+        </p>
+
+        {message && (
+          <div
+            onBlur={(e) =>
+
+              onArtifactChange("message", editorRef.current?.getMarkdown())
+            }
+            className="text-sm text-[#1A2636] outline-none -m-3 "
+          >
+            <MarkDownEditor
+              editorRef={editorRef}
+              markdown={message}
+              readOnly={!editMode}
+              hideToolbar={true}
+            />
+          </div>
+        )}
+        <div className="flex gap-4 flex-wrap items-center mt-2">
+          {tags.length > 0 &&
+            tags.map((tag: any) => (
+              <div
+                key={tag}
+                className="bg-[#C9DBE9] w-fit px-2 py-1 rounded-2xl text-[10px] text-[#1A2636] "
+              >
+                {tag}
+              </div>
+            ))}
+        </div>
       </div>
-      {codeEvaluation?.length > 0 &&
-        codeEvaluation
-          .flatMap((i: any, mainIndex: number) =>
-            !i.evaluations?.length ? [] : { ...i, mainIndex },
-          )
-          ?.map(({ evaluations, mainIndex }: any, index: any) => {
-            return (
-              <div key={evaluations[0]?.hash}>
-                <Artifact
-                  editMode={editMode}
-                  tags={evaluations[0]?.tags}
-                  message={evaluations[0]?.artifact_summary_string}
-                  value={evaluations[0]?.hash}
-                  repoName={evaluations[0]?.repo_name}
-                  title={
-                    <span className="text-[#518AB9] font-semibold text-[17px]">
-                      Commit{" "}
-                      <span
-                        contentEditable={editMode}
-                        className="outline-none"
-                        onBlur={(e) =>
-                          onArtifactChange(
-                            mainIndex,
-                            "hash",
-                            e.target.innerText,
-                          )
-                        }
-                      >
-                        {evaluations[0]?.hash?.slice(0, 7)}
-                      </span>
-                      :{" "}
-                      <span
-                        contentEditable={editMode}
-                        className="outline-none"
-                        onBlur={(e) =>
-                          onArtifactChange(
-                            mainIndex,
-                            "commit_title",
-                            e.target.innerText,
-                          )
-                        }
-                      >
-                        {evaluations[0]?.commit_title}
-                      </span>
-        codeEvaluation?.flatMap(({ evaluations }: any, index: any) => {
-          return !evaluations?.length ? (
-            []
-          ) : (
-            <div key={evaluations[0]?.hash}>
-              <Artifact
-                editMode={editMode}
-                tags={evaluations[0]?.tags}
-                message={evaluations[0]?.artifact_summary_string}
-                value={evaluations[0]?.hash}
-                repoName={evaluations[0]?.repo_name}
-                title={
-                  <span className="text-[#518AB9] font-semibold text-[17px]">
-                    Commit{" "}
-                    <span
-                      contentEditable={editMode}
-                      className="outline-none"
-                      onBlur={(e) =>
-                        onArtifactChange(index, "hash", e.target.innerText)
-                      }
-                    >
-                      {evaluations[0]?.hash?.slice(0, 7)}
-                    </span>
-                  }
-                  viewOnly={
-                    IS_WAYFAIR
-                      ? true
-                      : pathname?.includes("/package-creator")
-                      ? !expanded
-                      : true
-                  }
-                  checked={selectedCommits?.includes(evaluations[0]?.hash)}
-                  onCheck={handleCommitCheck}
-                  no={index + 1}
-                  url={evaluations[0]?.hash_url}
-                  repoLink={evaluations[0]?.hash_url?.split("/commit")[0]}
-                  updatedAt={evaluations[0]?.committed_at}
-                  onArtifactChange={(key: string, value: string) =>
-                    onArtifactChange(
-                      mainIndex,
-                      key === "message" ? "artifact_summary_string" : key,
-                      value,
+    </div>
+  );
+};
+
+export const DesignDocumentBody = () => {
+  const dispatch = useDispatch();
+  const selectedDesignDoc = useSelector(
+    (state: any) => state?.packageCreatorSlice?.selectedDesignDoc,
+  );
+  return (
+    <>
+      <p className="text-[17px] font-semibold text-[#1A2636]">
+        Select Files from Google Drive
+      </p>
+      <div className="my-4">
+        {selectedDesignDoc.length > 0 &&
+          selectedDesignDoc.map((doc: any) => (
+            <div key={doc?.id} className="flex items-center gap-5">
+              <div className="h-5 w-5">
+                <img
+                  src={doc?.iconUrl}
+                  style={{ height: "auto", width: "100%" }}
+                  alt={doc?.name}
+                />
+              </div>
+              <div className="flex items-center w-full justify-between">
+                <div>
+                  <p className="text-sm text-[#1A2636]">{doc?.name}</p>
+                  <a
+                    className="text-sm text-[#518AB9]"
+                    target="_blank"
+                    href={doc?.url}
+                  >
+                    {doc?.url}
+                  </a>
+                </div>
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    dispatch(
+                      setSelectedDesignDoc(
+                        selectedDesignDoc.filter((i: any) => i?.id !== doc?.id),
+                      ),
                     )
                   }
-                />
-                {index !== codeEvaluation?.length - 1 && (
-                  <Divider sx={{ margin: "20px 0px" }} />
-                )}
+                >
+                  <Close fontSize="small" />
+                </IconButton>
               </div>
-            );
-          })}
-                    :{" "}
-                    <span
-                      contentEditable={editMode}
-                      className="outline-none"
-                      onBlur={(e) =>
-                        onArtifactChange(
-                          index,
-                          "commit_title",
-                          e.target.innerText,
-                        )
-                      }
-                    >
-                      {evaluations[0]?.commit_title}
-                    </span>
-                  </span>
-                }
-                viewOnly={
-                  IS_WAYFAIR
-                    ? true
-                    : pathname?.includes("/package-creator")
-                    ? !expanded
-                    : true
-                }
-                checked={selectedCommits?.includes(evaluations[0]?.hash)}
-                onCheck={handleCommitCheck}
-                no={index + 1}
-                url={evaluations[0]?.hash_url}
-                updatedAt={evaluations[0]?.committed_at}
-                onArtifactChange={(key: string, value: string) =>
-                  onArtifactChange(
-                    index,
-                    key === "message" ? "artifact_summary_string" : key,
-                    value,
-                  )
-                }
-              />
-              {index !== codeEvaluation?.length - 1 && (
-                <Divider sx={{ margin: "20px 0px" }} />
-              )}
             </div>
+          ))}
+      </div>
+      <GoogleDrivePicker
+        onPick={(data) => {
+          const newDocs = data?.docs.filter(
+            (doc: any) =>
+              !selectedDesignDoc.some(
+                (selectedDoc: any) => selectedDoc.id === doc.id,
+              ),
           );
-        })}
-
-      {expanded && pathname?.includes("/package-creator") && (
-        <>
-          {!showAddMore && !IS_WAYFAIR ? (
-            <Button
-              variant="text"
-              sx={{ mt: 2, textDecoration: "underline" }}
-              onClick={() => {
-                codeCommitsQuery.refetch();
-                setShowAddMore(true);
-              }}
-              startIcon={<Add />}
-            >
-              Add more artifacts
-            </Button>
-          ) : (
-            <div className="mt-6">
-              {" "}
-              <AllCommits />
-            </div>
-          )}
-          {showAddMore && !IS_WAYFAIR && (
-            <>
-              <div className="border-2 w-full border-[#C9DBE9] my-4"></div>
-              <div>
-                <p className="text-[17px] font-semibold text-[#1A2636] ">
-                  Add more artifacts:
-                </p>
-                <p className="text-[#1A2636] text-sm ">
-                  Select from below list or upload more artifacts using URL
-                  links.
-                </p>
-              </div>
-              {codeCommitsQuery.data?.length && (
-                <div className="max-h-[400px] overflow-auto my-4 ">
-                  {codeCommitsQuery.data?.map((commit: any, index: number) => (
-                    <Fragment key={commit?.id}>
-                      <Artifact
-                        url={commit?.url}
-                        updatedAt={moment(commit?.committed_at).format(
-                          "MM/DD/YYYY, hh:mmA",
-                        )}
-                        message={commit?.commit_message}
-                        checked={selectedCommits?.includes(commit?.commit_sha)}
-                        value={commit?.commit_sha}
-                        onCheck={handleCommitCheck}
-                        repoName={commit?.repo_name || ""}
-                        no={
-                          !!codeEvaluation?.artifacts?.length
-                            ? codeEvaluation?.artifacts?.length + index + 1
-                            : index + 1
-                        }
-                        title={`Commit ${commit?.commit_sha?.slice(0, 7)}: ${
-                          commit?.commit_message
-                        }`}
-                      />
-                      {index !== codeCommitsQuery.data?.length - 1 && (
-                        <Divider />
-                      )}
-                    </Fragment>
-                  ))}
-                </div>
-              )}
-              {codeCommitsQuery.isFetching && <ContributionSkeleton />}
-            </>
-          )}
-        </>
-      )}
-    </div>
-  );
-};
-
-const CodeContributionDraft = ({
-  codeReview = null,
-  overallEvaluationSummary = null,
-  editMode = false,
-  onRetry = () => {},
-}: {
-  codeReview?: any[] | null;
-  overallEvaluationSummary?: any[] | null;
-  editMode?: boolean;
-  onRetry?: Function;
-}) => {
-  const packagingResult = useSelector(
-    (state: any) => state?.packageCreatorSlice?.packagingResult,
-  );
-  const stalePackageIds = useSelector(
-    (state: any) => state?.packageCreatorSlice?.stalePackageIds,
-  );
-  const selectedCommits: string[] = useSelector(
-    (state: any) => state.packageCreatorSlice?.selectedCommits,
-  );
-  const [loading, setLoading] = useState(false);
-
-  return (
-    <div>
-      <DraftAccordion
-        icon={<CodeIcon />}
-        title="Code Contribution"
-        collapsedBody={
-          <Output
-            editMode={editMode}
-            expanded={false}
-            codeReview={codeReview}
-            overallEvaluationSummary={overallEvaluationSummary}
-          />
-        }
-        expandedBody={
-          <Output
-            editMode={editMode}
-            expanded={true}
-            codeReview={codeReview}
-            overallEvaluationSummary={overallEvaluationSummary}
-          />
-        }
-        copyText={{
-          artifacts: combineEvaluations(packagingResult?.code_evaluation)
-            ?.artifacts,
-          ...packagingResult?.overall_evaluation?.code_evaluation,
+          dispatch(setSelectedDesignDoc([...selectedDesignDoc, ...newDocs]));
         }}
-        onRetry={() => {
-          onRetry({
-            status: "draft",
-            isRegenerate: true,
-            regenerate_section: "code_evaluation",
-            setLoading: (b: boolean) => setLoading(b),
-          });
-        }}
-        isRetrying={loading}
-        disableRegenerate={areArraysSimilar(
-          selectedCommits,
-          stalePackageIds?.selectedCommits,
-        )}
       />
-    </div>
+    </>
   );
 };
-
-export default CodeContributionDraft;
 
 
 ```
-

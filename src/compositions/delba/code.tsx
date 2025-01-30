@@ -31,6 +31,8 @@ export function Code({
         maxHeight: "100%", // Allow layout to adapt to container
         display: "flex",
         flexDirection: "column",
+        paddingRight: "30px",
+        paddingLeft: "30px",
       }}
     >
       {/* Sticky Top Bar */}
