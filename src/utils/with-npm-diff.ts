@@ -9,7 +9,10 @@ interface DiffOptions {
   newFileName?: string
 }
 
-type DiffScene = string[]
+type DiffScene = {
+  duration: number,
+  scene: string[]
+}
 
 /**
  * Generates diff lines between two strings using the diff library
@@ -31,7 +34,7 @@ export function generateDiffLines(
  * @param targetIndex - Index of the change to focus on
  * @returns Tuple of [beforeScene, afterScene]
  */
-function generateRemovedOnlyScenes(diff: Change[], targetIndex: number): [DiffScene, DiffScene] {
+function generateRemovedOnlyScenes(diff: Change[], targetIndex: number): DiffScene[] {
   const beforeScene: string[] = []
   const afterScene: string[] = []
 
@@ -52,7 +55,18 @@ function generateRemovedOnlyScenes(diff: Change[], targetIndex: number): [DiffSc
     }
   })
 
-  return [beforeScene, afterScene]
+  const scneneGenerated = [
+    {
+      duration: 100,
+      scene: beforeScene
+    },
+    {
+      duration: 200,
+      scene: afterScene
+    }
+  ]
+
+  return scneneGenerated
 }
 
 /**
@@ -61,7 +75,7 @@ function generateRemovedOnlyScenes(diff: Change[], targetIndex: number): [DiffSc
  * @param targetIndex - Index of the change to focus on
  * @returns Tuple of [beforeScene, afterScene]
  */
-function generateAddedOnlyScenes(diff: Change[], targetIndex: number): [DiffScene, DiffScene] {
+function generateAddedOnlyScenes(diff: Change[], targetIndex: number): DiffScene[] {
   const beforeScene: string[] = []
   const afterScene: string[] = []
 
@@ -88,7 +102,18 @@ function generateAddedOnlyScenes(diff: Change[], targetIndex: number): [DiffScen
     }
   })
 
-  return [beforeScene, afterScene]
+  const scneneGenerated = [
+    {
+      duration: 100,
+      scene: beforeScene
+    },
+    {
+      duration: 200,
+      scene: afterScene
+    }
+  ]
+
+  return scneneGenerated
 }
 
 /**
@@ -102,7 +127,7 @@ function generateRemovedAddedScenes(
   diff: Change[],
   removedIndex: number,
   addedIndex: number
-): [DiffScene, DiffScene, DiffScene] {
+): DiffScene[] {
   const beforeScene: string[] = []
   const middleScene: string[] = []
   const afterScene: string[] = []
@@ -171,7 +196,22 @@ function generateRemovedAddedScenes(
     }
   })
 
-  return [beforeScene, middleScene, afterScene]
+  const scneneGenerated = [
+    {
+      duration: 150,
+      scene: beforeScene
+    },
+    {
+      duration: 80,
+      scene: middleScene
+    },
+    {
+      duration: 200,
+      scene: afterScene
+    }
+  ]
+
+  return scneneGenerated
 }
 
 const diff = generateDiffLines(testOldCode, testNewCode)
@@ -237,10 +277,10 @@ for (let i = 0; i < scenes.length; i++) {
   const step =
     `## !!steps ${i}\n` +
     "\n" +
-    "!duration 200\n" +
+    `!duration ${scenes[i].duration}\n` +
     "\n" +
     "```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx\n" +
-    `${scenes[i].join("\n")}\n` +
+    `${scenes[i].scene.join("\n")}\n` +
     "```\n" +
     "\n"
   contentMd.push(step)
