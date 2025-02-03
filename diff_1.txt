@@ -1,0 +1,899 @@
+   1: "use client";
+   2: import { setSelectedDesignDoc } from "@/store/packageCreatorSlice";
+   3: import { MDXEditorMethods } from "@mdxeditor/editor";
+   4: import Close from "@mui/icons-material/Close";
+   5: import { Checkbox, IconButton, Link } from "@mui/material";
+   6: import { useMemo, useRef } from "react";
+   7: import { useDispatch, useSelector } from "react-redux";
+   8: import MarkDownEditor from "../ui/MarkDownEditor";
+   9: import GoogleDrivePicker from "./GoogleDrivePicker";
+
+   10: export const Strength = ({
+   11:   strengths,
+   12:   editMode = false,
+   13:   onDataChange = () => {},
+   14: }: {
+   15:   strengths: any[];
+   16:   editMode: boolean;
+   17:   onDataChange: any;
+   18: }) => (
+   19:   <div
+   20:     className={`w-full border-1 ${
+   21:       editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+   22:     } rounded-xl p-4`}
+   23:   >
+   24:     <p className="text-[17px] font-semibold text-[#1A2636]">Strengths</p>
+   25:     <ul className="text-sm font-normal list-disc px-4">
+   26:       {strengths?.map((str: any, index: number) => (
+   27:         <li key={str?.strength + index}>
+   28:           <span
+   29:             contentEditable={editMode}
+   30:             className="font-semibold outline-none"
+
+-  31:             onBlur={(e) => onDataChange(index, "strength", e.target.innerText)}
+
++  32:             onBlur={(e) =>
++  33:               editMode && onDataChange(index, "strength", e.target.innerText)
++  34:             }
+
+   35:           >
+   36:             {str?.strength}
+   37:           </span>
+   38:           :{" "}
+   39:           <span
+   40:             contentEditable={editMode}
+
++  41:             dangerouslySetInnerHTML={{ __html: str?.description }}
+
+   42:             className="outline-none"
+   43:             onBlur={(e) =>
+
+-  44:               onDataChange(index, "description", e.target.innerText)
+
++  45:               editMode && onDataChange(index, "description", e.target.innerText)
+
+   46:             }
+
+-  47:           >
+-  48:             {str?.description}
+-  49:           </span>
+
++  50:           ></span>
+
+   51:         </li>
+   52:       ))}
+   53:     </ul>
+   54:   </div>
+   55: );
+
+   56: export const Opportunity = ({
+   57:   opportunities,
+   58:   editMode = false,
+   59:   onDataChange = () => {},
+   60: }: {
+   61:   opportunities: any[];
+   62:   editMode: boolean;
+   63:   onDataChange: any;
+   64: }) => (
+   65:   <div
+   66:     className={`w-full border-1 ${
+   67:       editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+   68:     } rounded-xl p-4`}
+   69:   >
+   70:     <p className="text-[17px] font-semibold text-[#1A2636]">Opportunities</p>
+   71:     <ul className="text-sm font-normal list-disc px-4">
+   72:       {opportunities?.map((opp: any, index: number) => (
+   73:         <li key={opp?.opportunity + index}>
+   74:           <span
+   75:             contentEditable={editMode}
+   76:             className="font-semibold outline-none"
+   77:             onBlur={(e) =>
+
+-  78:               onDataChange(index, "opportunity", e.target.innerText)
+
++  79:               editMode && onDataChange(index, "opportunity", e.target.innerText)
+
+   80:             }
+   81:           >
+   82:             {opp?.opportunity}
+   83:           </span>
+   84:           :{" "}
+   85:           <span
+
++  86:             dangerouslySetInnerHTML={{ __html: opp?.description }}
+
+   87:             contentEditable={editMode}
+   88:             className="outline-none "
+   89:             onBlur={(e) =>
+
+-  90:               onDataChange(index, "description", e.target.innerText)
+
++  91:               editMode && onDataChange(index, "description", e.target.innerText)
+
+   92:             }
+
+-  93:           >
+-  94:             {opp?.description}
+-  95:           </span>
+
++  96:           ></span>
+
+   97:         </li>
+   98:       ))}
+   99:     </ul>
+   100:   </div>
+   101: );
+
+   102: export const Artifact = ({
+   103:   viewOnly = false,
+   104:   tags = [],
+   105:   url = "",
+   106:   updatedAt = "",
+   107:   message = "",
+   108:   onCheck = () => {},
+   109:   checked = false,
+   110:   value,
+   111:   title = null,
+   112:   no = 0,
+   113:   artifactTitle = "Artifact",
+   114:   editMode = false,
+   115:   onArtifactChange = () => {},
+   116:   repoName = "",
+
++  117:   repoLink = "",
+
+   118: }: any) => {
+   119:   const editorRef = useRef<MDXEditorMethods>(null);
+   120:   useMemo(() => editorRef.current?.setMarkdown(message), [message]);
+   121:   return (
+   122:     <div className="my-2">
+   123:       <div className="flex gap-2 items-center">
+   124:         {!viewOnly && (
+   125:           <Checkbox
+   126:             value={value}
+   127:             onChange={() => onCheck(value)}
+   128:             sx={{
+   129:               "&.Mui-checked": {
+   130:                 color: "#4ED9EF",
+   131:               },
+   132:               color: "#29324166",
+   133:               padding: 0,
+   134:             }}
+   135:             checked={checked}
+   136:           />
+   137:         )}
+   138:         <p className="text-[#1A2636] text-[17px] font-semibold">
+   139:           {artifactTitle} {no && no}
+   140:         </p>
+   141:       </div>
+   142:       <div
+   143:         className={`my-2 ${
+   144:           editMode && "bg-blue-50 border-1 border-blue-100 p-3 rounded"
+   145:         } `}
+   146:       >
+   147:         {!!url && !editMode ? (
+   148:           <Link href={url} target="_blank" style={{ textDecoration: "none" }}>
+   149:             <span className="outline-none text-[#518AB9] font-semibold text-[17px] no-underline">
+   150:               {title}
+   151:             </span>
+   152:           </Link>
+   153:         ) : typeof title === "string" ? (
+   154:           <p className="text-[#518AB9] font-semibold text-[17px]">
+   155:             <span
+   156:               contentEditable={editMode}
+   157:               className="outline-none"
+
+-  158:               onBlur={(e) => onArtifactChange("title", e.target.innerText)}
+
++  159:               onBlur={(e) =>
++  160:                 editMode && onArtifactChange("title", e.target.innerText)
++  161:               }
+
+   162:             >
+   163:               {title}
+   164:             </span>
+   165:           </p>
+   166:         ) : (
+   167:           title
+   168:         )}
+
+   169:         <p>
+   170:           {!!repoName && (
+
+-  171:             <span
+-  172:               contentEditable={editMode}
+-  173:               onBlur={(e) => onArtifactChange("repo_name", e.target.innerText)}
+-  174:               className="text-sm font-medium pr-4 outline-none"
+
++  175:             <Link
++  176:               target="_blank"
++  177:               href={repoLink}
++  178:               style={{ textDecoration: "none" }}
+
+   179:             >
+
+-  180:               {repoName}
+-  181:             </span>
+
++  182:               <span
++  183:                 contentEditable={editMode}
++  184:                 onBlur={(e) =>
++  185:                   editMode && onArtifactChange("repo_name", e.target.innerText)
++  186:                 }
++  187:                 className="text-sm font-medium pr-4 outline-none"
++  188:               >
++  189:                 {repoName}
++  190:               </span>
++  191:             </Link>
+
+   192:           )}
+   193:           {!!updatedAt && (
+   194:             <span className="my-1 text-[#1A2636] text-xs italic">
+   195:               Last updated: {updatedAt}
+   196:             </span>
+   197:           )}
+   198:         </p>
+
+   199:         {message && (
+   200:           <div
+   201:             onBlur={(e) =>
+
++  202:               editMode &&
+
+   203:               onArtifactChange("message", editorRef.current?.getMarkdown())
+   204:             }
+   205:             className="text-sm text-[#1A2636] outline-none -m-3 "
+   206:           >
+   207:             <MarkDownEditor
+   208:               editorRef={editorRef}
+   209:               markdown={message}
+   210:               readOnly={!editMode}
+   211:               hideToolbar={true}
+   212:             />
+   213:           </div>
+   214:         )}
+   215:         <div className="flex gap-4 flex-wrap items-center mt-2">
+   216:           {tags.length > 0 &&
+   217:             tags.map((tag: any) => (
+   218:               <div
+   219:                 key={tag}
+   220:                 className="bg-[#C9DBE9] w-fit px-2 py-1 rounded-2xl text-[10px] text-[#1A2636] "
+   221:               >
+   222:                 {tag}
+   223:               </div>
+   224:             ))}
+   225:         </div>
+   226:       </div>
+   227:     </div>
+   228:   );
+   229: };
+
+   230: export const DesignDocumentBody = () => {
+   231:   const dispatch = useDispatch();
+   232:   const selectedDesignDoc = useSelector(
+   233:     (state: any) => state?.packageCreatorSlice?.selectedDesignDoc,
+   234:   );
+   235:   return (
+   236:     <>
+   237:       <p className="text-[17px] font-semibold text-[#1A2636]">
+   238:         Select Files from Google Drive
+   239:       </p>
+   240:       <div className="my-4">
+   241:         {selectedDesignDoc.length > 0 &&
+   242:           selectedDesignDoc.map((doc: any) => (
+   243:             <div key={doc?.id} className="flex items-center gap-5">
+   244:               <div className="h-5 w-5">
+   245:                 <img
+   246:                   src={doc?.iconUrl}
+   247:                   style={{ height: "auto", width: "100%" }}
+   248:                   alt={doc?.name}
+   249:                 />
+   250:               </div>
+   251:               <div className="flex items-center w-full justify-between">
+   252:                 <div>
+   253:                   <p className="text-sm text-[#1A2636]">{doc?.name}</p>
+   254:                   <a
+   255:                     className="text-sm text-[#518AB9]"
+   256:                     target="_blank"
+   257:                     href={doc?.url}
+   258:                   >
+   259:                     {doc?.url}
+   260:                   </a>
+   261:                 </div>
+   262:                 <IconButton
+   263:                   size="small"
+   264:                   onClick={() =>
+   265:                     dispatch(
+   266:                       setSelectedDesignDoc(
+   267:                         selectedDesignDoc.filter((i: any) => i?.id !== doc?.id),
+   268:                       ),
+   269:                     )
+   270:                   }
+   271:                 >
+   272:                   <Close fontSize="small" />
+   273:                 </IconButton>
+   274:               </div>
+   275:             </div>
+   276:           ))}
+   277:       </div>
+   278:       <GoogleDrivePicker
+   279:         onPick={(data) => {
+   280:           const newDocs = data?.docs.filter(
+   281:             (doc: any) =>
+   282:               !selectedDesignDoc.some(
+   283:                 (selectedDoc: any) => selectedDoc.id === doc.id,
+   284:               ),
+   285:           );
+   286:           dispatch(setSelectedDesignDoc([...selectedDesignDoc, ...newDocs]));
+   287:         }}
+   288:       />
+   289:     </>
+   290:   );
+   291: };
+
+
+   292: import { useFetchCodeCommits } from "@/hooks/useApi";
+   293: import useAuth from "@/hooks/useAuth";
+   294: import { areArraysSimilar } from "@/store/generalSlice";
+   295: import {
+   296:   setPackagingResult,
+   297:   setSelectedCommitsForRepos,
+   298: } from "@/store/packageCreatorSlice";
+   299: import { combineEvaluations } from "@/utils/generalFunctions";
+   300: import { MDXEditorMethods } from "@mdxeditor/editor";
+   301: import Add from "@mui/icons-material/Add";
+   302: import { Divider } from "@mui/material";
+   303: import moment from "moment";
+   304: import { usePathname, useSearchParams } from "next/navigation";
+   305: import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+   306: import { useDispatch, useSelector } from "react-redux";
+   307: import Button from "../ui/Button";
+   308: import { CodeIcon } from "../ui/Icons";
+   309: import ContributionSkeleton from "../ui/loaders/ContributionSkeleton";
+   310: import MarkDownEditor from "../ui/MarkDownEditor";
+   311: import { AllCommits } from "./CommitsTable";
+   312: import DraftAccordion from "./DraftAccordion";
+   313: import { Artifact, Opportunity, Strength } from "./DraftComponents";
+
+   314: const Output = ({
+   315:   expanded,
+   316:   codeReview,
+   317:   editMode,
+   318:   overallEvaluationSummary,
+   319: }: {
+   320:   expanded: boolean;
+   321:   codeReview: any;
+   322:   editMode: boolean;
+   323:   overallEvaluationSummary: any;
+   324: }) => {
+   325:   const auth = useAuth();
+   326:   const { IS_WAYFAIR } = auth;
+   327:   const [showAddMore, setShowAddMore] = useState(false);
+   328:   const searchParams = useSearchParams();
+   329:   const userId = searchParams?.get("user_id");
+   330:   const editorRef = useRef<MDXEditorMethods>(null);
+   331:   const selectedRepos: string[] = useSelector(
+   332:     (state: any) => state.packageCreatorSlice?.selectedRepos,
+   333:   );
+   334:   const selectedCommits: string[] = useSelector(
+   335:     (state: any) => state.packageCreatorSlice?.selectedCommits,
+   336:   );
+   337:   const pathname = usePathname();
+   338:   const dispatch = useDispatch();
+   339:   const codeCommitsQuery = useFetchCodeCommits({
+   340:     enabled: false,
+   341:     queryKey: [userId, [selectedRepos]],
+   342:     params: {
+   343:       filter: JSON.stringify({
+   344:         employee_id: userId,
+   345:         repo_id: selectedRepos,
+   346:         selected_commits: selectedCommits,
+   347:       }),
+   348:       sort: JSON.stringify({ sortDir: "desc" }),
+   349:     },
+   350:   });
+   351:   const codeEvaluation = !pathname?.includes("/package-creator")
+   352:     ? codeReview
+   353:     : useSelector((state: any) => state?.packageCreatorSlice?.packagingResult)
+   354:         ?.code_evaluation;
+
+   355:   const packagingResult = useSelector(
+   356:     (state: any) => state?.packageCreatorSlice?.packagingResult,
+   357:   );
+   358:   const overallEvaluation = !pathname?.includes("/package-creator")
+   359:     ? overallEvaluationSummary
+   360:     : useSelector((state: any) => state?.packageCreatorSlice?.packagingResult)
+   361:         ?.overall_evaluation?.code_evaluation;
+
+   362:   const onDataChange = (
+   363:     type: "opportunities" | "strengths",
+   364:     listIndex: number,
+   365:     key: string,
+   366:     value: string,
+   367:   ) => {
+   368:     const updatedData = {
+   369:       ...packagingResult?.overall_evaluation?.code_evaluation?.evaluation,
+   370:       [type]: packagingResult?.overall_evaluation?.code_evaluation?.evaluation[
+   371:         type
+   372:       ].map((listData: any, lI: number) =>
+   373:         lI === listIndex ? { ...listData, [key]: value } : listData,
+   374:       ),
+   375:     };
+
+   376:     dispatch(
+   377:       setPackagingResult({
+   378:         ...packagingResult,
+   379:         overall_evaluation: {
+   380:           ...packagingResult?.overall_evaluation,
+   381:           code_evaluation: {
+   382:             ...packagingResult?.overall_evaluation?.code_evaluation,
+   383:             evaluation: updatedData,
+   384:           },
+   385:         },
+   386:       }),
+   387:     );
+   388:   };
+   389:   const onArtifactChange = (mainIndex: number, key: string, value: string) => {
+   390:     dispatch(
+   391:       setPackagingResult({
+   392:         ...packagingResult,
+   393:         code_evaluation: packagingResult?.code_evaluation?.map(
+   394:           (ev: any, mI: number) =>
+   395:             mI === mainIndex
+   396:               ? {
+   397:                   ...ev,
+   398:                   evaluations: [
+   399:                     {
+   400:                       ...ev?.evaluations[0],
+   401:                       [key]: value,
+   402:                     },
+   403:                   ],
+   404:                 }
+   405:               : ev,
+   406:         ),
+   407:       }),
+   408:     );
+   409:   };
+
+   410:   useEffect(() => {
+   411:     if (
+   412:       codeEvaluation?.length > 0 &&
+   413:       selectedCommits?.length === 0 &&
+   414:       pathname?.includes("/package-creator") &&
+   415:       !IS_WAYFAIR
+   416:     ) {
+   417:       dispatch(
+   418:         setSelectedCommitsForRepos(
+   419:           codeEvaluation?.map(({ evaluations }: any) => evaluations[0]?.hash),
+   420:         ),
+   421:       );
+   422:     }
+   423:   }, [codeEvaluation]);
+
+   424:   const handleSummaryChange = (e: any) => {
+   425:     dispatch(
+   426:       setPackagingResult({
+   427:         ...packagingResult,
+   428:         overall_evaluation: {
+   429:           ...packagingResult?.overall_evaluation,
+   430:           code_evaluation: {
+   431:             ...packagingResult?.overall_evaluation?.code_evaluation,
+   432:             summary: editorRef.current?.getMarkdown(),
+   433:           },
+   434:         },
+   435:       }),
+   436:     );
+   437:   };
+
+   438:   const handleCommitCheck = (value: string) => {
+   439:     dispatch(
+   440:       setSelectedCommitsForRepos(
+   441:         selectedCommits?.includes(value)
+   442:           ? selectedCommits?.filter((v: string) => v !== value)
+   443:           : [...selectedCommits, value],
+   444:       ),
+   445:     );
+   446:   };
+
+   447:   useMemo(
+   448:     () => editorRef.current?.setMarkdown(overallEvaluation?.summary),
+   449:     [overallEvaluation?.summary],
+   450:   );
+
+
++  451:   const replaceHashWithURL = (opportunities: any) => {
++  452:     let evalObj: any = {};
++  453:     codeEvaluation.forEach(({ evaluations }: any) => {
++  454:       evalObj[evaluations[0]?.hash] = evaluations[0]?.hash_url;
++  455:     });
+
++  456:     if (typeof opportunities === "string") {
++  457:       Object.keys(evalObj).forEach((key) => {
++  458:         if (opportunities?.includes(key.slice(0, 7))) {
++  459:           opportunities = opportunities.replace(
++  460:             key.slice(0, 7),
++  461:             `[${key.slice(0, 7)}](${evalObj[key]})`,
++  462:           );
++  463:         } else if (opportunities?.includes(key.slice(0, 6))) {
++  464:           opportunities = opportunities.replace(
++  465:             key.slice(0, 6),
++  466:             `[${key.slice(0, 7)}](${evalObj[key]})`,
++  467:           );
++  468:         }
++  469:       });
+
++  470:       return opportunities;
++  471:     }
+
++  472:     const newOpp = opportunities?.map((opp: any) => {
++  473:       let updatedDescription = opp?.description;
+
++  474:       Object.keys(evalObj).forEach((key) => {
++  475:         if (updatedDescription?.includes(key.slice(0, 7))) {
++  476:           updatedDescription = updatedDescription.replace(
++  477:             key.slice(0, 7),
++  478:             `<a target="_blank" contenteditable="false" style="cursor: pointer; background-color: #C9DBE9; width: fit-content; padding: 0rem 0.75rem; border-radius: 1rem; margin: auto; font-size: 0.875rem; color: #1A2636;" href=${
++  479:               evalObj[key]
++  480:             }>${key.slice(0, 7)}</a>`,
++  481:           );
++  482:         } else if (updatedDescription?.includes(key.slice(0, 6))) {
++  483:           updatedDescription = updatedDescription.replace(
++  484:             key.slice(0, 6),
++  485:             `<a target="_blank" contenteditable="false" style="cursor: pointer; background-color: #C9DBE9; width: fit-content; padding: 0rem 0.75rem; border-radius: 1rem; margin: auto; font-size: 0.875rem; color: #1A2636;" href=${
++  486:               evalObj[key]
++  487:             }>${key.slice(0, 7)}</a>`,
++  488:           );
++  489:         }
++  490:       });
+
++  491:       return {
++  492:         ...opp,
++  493:         description: updatedDescription,
++  494:       };
++  495:     });
++  496:     return newOpp;
++  497:   };
+
+
+   498:   return (
+   499:     <div>
+   500:       <div
+   501:         className={`text-sm text-[#1A2636] p-1 ${
+   502:           editMode
+   503:             ? "rounded bg-blue-50 ring-1 ring-blue-200 border-half border-blue-100 outline-none"
+   504:             : " border-1 rounded-xl"
+   505:         } `}
+   506:         onBlur={handleSummaryChange}
+   507:       >
+   508:         <MarkDownEditor
+   509:           editorRef={editorRef}
+   510:           markdown={
+   511:             overallEvaluation?.summary?.length > 0
+
+-  512:               ? overallEvaluation?.summary
+
++  513:               ? replaceHashWithURL(overallEvaluation?.summary)
+
+   514:               : "No summary found"
+   515:           }
+   516:           readOnly={!editMode}
+   517:           hideToolbar={true}
+   518:         />
+   519:       </div>
+
+   520:       <div
+   521:         className={`flex ${
+   522:           !pathname?.includes("/package-creator")
+   523:             ? "flex-wrap"
+   524:             : "items-stretch"
+   525:         }  justify-between gap-4 my-4`}
+   526:       >
+   527:         <Strength
+
+-  528:           strengths={overallEvaluation?.evaluation?.strengths}
+
++  529:           strengths={replaceHashWithURL(
++  530:             overallEvaluation?.evaluation?.strengths,
++  531:           )}
+
+   532:           editMode={editMode}
+   533:           onDataChange={(index: number, k: string, v: string) =>
+   534:             onDataChange("strengths", index, k, v)
+   535:           }
+   536:         />
+   537:         <Opportunity
+
+-  538:           opportunities={overallEvaluation?.evaluation?.opportunities}
+
++  539:           opportunities={replaceHashWithURL(
++  540:             overallEvaluation?.evaluation?.opportunities,
++  541:           )}
+
+   542:           editMode={editMode}
+   543:           onDataChange={(index: number, k: string, v: string) =>
+   544:             onDataChange("opportunities", index, k, v)
+   545:           }
+   546:         />
+   547:       </div>
+   548:       {codeEvaluation?.length > 0 &&
+
+-  549:         codeEvaluation?.flatMap(({ evaluations }: any, index: any) => {
+-  550:           return !evaluations?.length ? (
+-  551:             []
+-  552:           ) : (
+-  553:             <div key={evaluations[0]?.hash}>
+-  554:               <Artifact
+-  555:                 editMode={editMode}
+-  556:                 tags={evaluations[0]?.tags}
+-  557:                 message={evaluations[0]?.artifact_summary_string}
+-  558:                 value={evaluations[0]?.hash}
+-  559:                 repoName={evaluations[0]?.repo_name}
+-  560:                 title={
+-  561:                   <span className="text-[#518AB9] font-semibold text-[17px]">
+-  562:                     Commit{" "}
+-  563:                     <span
+-  564:                       contentEditable={editMode}
+-  565:                       className="outline-none"
+-  566:                       onBlur={(e) =>
+-  567:                         onArtifactChange(index, "hash", e.target.innerText)
+-  568:                       }
+-  569:                     >
+-  570:                       {evaluations[0]?.hash?.slice(0, 7)}
+
++  571:         codeEvaluation
++  572:           .flatMap((i: any, mainIndex: number) =>
++  573:             !i.evaluations?.length ? [] : { ...i, mainIndex },
++  574:           )
++  575:           ?.map(({ evaluations, mainIndex }: any, index: any) => {
++  576:             return (
++  577:               <div key={evaluations[0]?.hash}>
++  578:                 <Artifact
++  579:                   editMode={editMode}
++  580:                   tags={evaluations[0]?.tags}
++  581:                   message={evaluations[0]?.artifact_summary_string}
++  582:                   value={evaluations[0]?.hash}
++  583:                   repoName={evaluations[0]?.repo_name}
++  584:                   title={
++  585:                     <span className="text-[#518AB9] font-semibold text-[17px]">
++  586:                       Commit{" "}
++  587:                       <span
++  588:                         contentEditable={editMode}
++  589:                         className="outline-none"
++  590:                         onBlur={(e) =>
++  591:                           onArtifactChange(
++  592:                             mainIndex,
++  593:                             "hash",
++  594:                             e.target.innerText,
++  595:                           )
++  596:                         }
++  597:                       >
++  598:                         {evaluations[0]?.hash?.slice(0, 7)}
++  599:                       </span>
++  600:                       :{" "}
++  601:                       <span
++  602:                         contentEditable={editMode}
++  603:                         className="outline-none"
++  604:                         onBlur={(e) =>
++  605:                           onArtifactChange(
++  606:                             mainIndex,
++  607:                             "commit_title",
++  608:                             e.target.innerText,
++  609:                           )
++  610:                         }
++  611:                       >
++  612:                         {evaluations[0]?.commit_title}
++  613:                       </span>
+
+   614:                     </span>
+
+-  615:                     :{" "}
+-  616:                     <span
+-  617:                       contentEditable={editMode}
+-  618:                       className="outline-none"
+-  619:                       onBlur={(e) =>
+-  620:                         onArtifactChange(
+-  621:                           index,
+-  622:                           "commit_title",
+-  623:                           e.target.innerText,
+-  624:                         )
+-  625:                       }
+-  626:                     >
+-  627:                       {evaluations[0]?.commit_title}
+-  628:                     </span>
+-  629:                   </span>
+-  630:                 }
+-  631:                 viewOnly={
+-  632:                   IS_WAYFAIR
+-  633:                     ? true
+-  634:                     : pathname?.includes("/package-creator")
+-  635:                     ? !expanded
+-  636:                     : true
+-  637:                 }
+-  638:                 checked={selectedCommits?.includes(evaluations[0]?.hash)}
+-  639:                 onCheck={handleCommitCheck}
+-  640:                 no={index + 1}
+-  641:                 url={evaluations[0]?.hash_url}
+-  642:                 updatedAt={evaluations[0]?.committed_at}
+-  643:                 onArtifactChange={(key: string, value: string) =>
+-  644:                   onArtifactChange(
+-  645:                     index,
+-  646:                     key === "message" ? "artifact_summary_string" : key,
+-  647:                     value,
+-  648:                   )
+-  649:                 }
+-  650:               />
+-  651:               {index !== codeEvaluation?.length - 1 && (
+-  652:                 <Divider sx={{ margin: "20px 0px" }} />
+-  653:               )}
+-  654:             </div>
+-  655:           );
+-  656:         })}
+
++  657:                   }
++  658:                   viewOnly={
++  659:                     IS_WAYFAIR
++  660:                       ? true
++  661:                       : pathname?.includes("/package-creator")
++  662:                       ? !expanded
++  663:                       : true
++  664:                   }
++  665:                   checked={selectedCommits?.includes(evaluations[0]?.hash)}
++  666:                   onCheck={handleCommitCheck}
++  667:                   no={index + 1}
++  668:                   url={evaluations[0]?.hash_url}
++  669:                   repoLink={evaluations[0]?.hash_url?.split("/commit")[0]}
++  670:                   updatedAt={evaluations[0]?.committed_at}
++  671:                   onArtifactChange={(key: string, value: string) =>
++  672:                     onArtifactChange(
++  673:                       mainIndex,
++  674:                       key === "message" ? "artifact_summary_string" : key,
++  675:                       value,
++  676:                     )
++  677:                   }
++  678:                 />
++  679:                 {index !== codeEvaluation?.length - 1 && (
++  680:                   <Divider sx={{ margin: "20px 0px" }} />
++  681:                 )}
++  682:               </div>
++  683:             );
++  684:           })}
+
+
+   685:       {expanded && pathname?.includes("/package-creator") && (
+   686:         <>
+   687:           {!showAddMore && !IS_WAYFAIR ? (
+   688:             <Button
+   689:               variant="text"
+   690:               sx={{ mt: 2, textDecoration: "underline" }}
+   691:               onClick={() => {
+   692:                 codeCommitsQuery.refetch();
+   693:                 setShowAddMore(true);
+   694:               }}
+   695:               startIcon={<Add />}
+   696:             >
+   697:               Add more artifacts
+   698:             </Button>
+   699:           ) : (
+   700:             <div className="mt-6">
+   701:               {" "}
+   702:               <AllCommits />
+   703:             </div>
+   704:           )}
+   705:           {showAddMore && !IS_WAYFAIR && (
+   706:             <>
+   707:               <div className="border-2 w-full border-[#C9DBE9] my-4"></div>
+   708:               <div>
+   709:                 <p className="text-[17px] font-semibold text-[#1A2636] ">
+   710:                   Add more artifacts:
+   711:                 </p>
+   712:                 <p className="text-[#1A2636] text-sm ">
+   713:                   Select from below list or upload more artifacts using URL
+   714:                   links.
+   715:                 </p>
+   716:               </div>
+   717:               {codeCommitsQuery.data?.length && (
+   718:                 <div className="max-h-[400px] overflow-auto my-4 ">
+   719:                   {codeCommitsQuery.data?.map((commit: any, index: number) => (
+   720:                     <Fragment key={commit?.id}>
+   721:                       <Artifact
+   722:                         url={commit?.url}
+   723:                         updatedAt={moment(commit?.committed_at).format(
+   724:                           "MM/DD/YYYY, hh:mmA",
+   725:                         )}
+   726:                         message={commit?.commit_message}
+   727:                         checked={selectedCommits?.includes(commit?.commit_sha)}
+   728:                         value={commit?.commit_sha}
+   729:                         onCheck={handleCommitCheck}
+   730:                         repoName={commit?.repo_name || ""}
+   731:                         no={
+   732:                           !!codeEvaluation?.artifacts?.length
+   733:                             ? codeEvaluation?.artifacts?.length + index + 1
+   734:                             : index + 1
+   735:                         }
+   736:                         title={`Commit ${commit?.commit_sha?.slice(0, 7)}: ${
+   737:                           commit?.commit_message
+   738:                         }`}
+   739:                       />
+   740:                       {index !== codeCommitsQuery.data?.length - 1 && (
+   741:                         <Divider />
+   742:                       )}
+   743:                     </Fragment>
+   744:                   ))}
+   745:                 </div>
+   746:               )}
+   747:               {codeCommitsQuery.isFetching && <ContributionSkeleton />}
+   748:             </>
+   749:           )}
+   750:         </>
+   751:       )}
+   752:     </div>
+   753:   );
+   754: };
+
+   755: const CodeContributionDraft = ({
+   756:   codeReview = null,
+   757:   overallEvaluationSummary = null,
+   758:   editMode = false,
+   759:   onRetry = () => {},
+   760: }: {
+   761:   codeReview?: any[] | null;
+   762:   overallEvaluationSummary?: any[] | null;
+   763:   editMode?: boolean;
+   764:   onRetry?: Function;
+   765: }) => {
+   766:   const packagingResult = useSelector(
+   767:     (state: any) => state?.packageCreatorSlice?.packagingResult,
+   768:   );
+   769:   const stalePackageIds = useSelector(
+   770:     (state: any) => state?.packageCreatorSlice?.stalePackageIds,
+   771:   );
+   772:   const selectedCommits: string[] = useSelector(
+   773:     (state: any) => state.packageCreatorSlice?.selectedCommits,
+   774:   );
+   775:   const [loading, setLoading] = useState(false);
+
+   776:   return (
+   777:     <div>
+   778:       <DraftAccordion
+   779:         icon={<CodeIcon />}
+   780:         title="Code Contribution"
+   781:         collapsedBody={
+   782:           <Output
+   783:             editMode={editMode}
+   784:             expanded={false}
+   785:             codeReview={codeReview}
+   786:             overallEvaluationSummary={overallEvaluationSummary}
+   787:           />
+   788:         }
+   789:         expandedBody={
+   790:           <Output
+   791:             editMode={editMode}
+   792:             expanded={true}
+   793:             codeReview={codeReview}
+   794:             overallEvaluationSummary={overallEvaluationSummary}
+   795:           />
+   796:         }
+   797:         copyText={{
+   798:           artifacts: combineEvaluations(packagingResult?.code_evaluation)
+   799:             ?.artifacts,
+   800:           ...packagingResult?.overall_evaluation?.code_evaluation,
+   801:         }}
+   802:         onRetry={() => {
+   803:           onRetry({
+   804:             status: "draft",
+   805:             isRegenerate: true,
+   806:             regenerate_section: "code_evaluation",
+   807:             setLoading: (b: boolean) => setLoading(b),
+   808:           });
+   809:         }}
+   810:         isRetrying={loading}
+   811:         disableRegenerate={areArraysSimilar(
+   812:           selectedCommits,
+   813:           stalePackageIds?.selectedCommits,
+   814:         )}
+   815:       />
+   816:     </div>
+   817:   );
+   818: };
+
+   819: export default CodeContributionDraft;

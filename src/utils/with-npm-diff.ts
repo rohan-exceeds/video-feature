@@ -1,8 +1,12 @@
 import { diffLines, Change } from "diff"
 import {
-  oldCode as testOldCode,
-  newCode as testNewCode,
+  oldCode1 as testOldCode1,
+  newCode1 as testNewCode1,
+  oldCode2 as testOldCode2,
+  newCode2 as testNewCode2,
 } from "./old-new-code-test-vars"
+const fs = require("fs")
+
 
 interface DiffOptions {
   oldFileName?: string
@@ -214,78 +218,115 @@ function generateRemovedAddedScenes(
   return scneneGenerated
 }
 
-const diff = generateDiffLines(testOldCode, testNewCode)
+const diffs = [generateDiffLines(testOldCode1, testNewCode1), generateDiffLines(testOldCode2, testNewCode2)]
 let scenes: DiffScene[] = []
 
-for (let i = 0; i < diff.length; i++) {
-  if (i === diff.length - 1) {
-    if (diff[i].removed === true && diff[i - 1].removed === false) {
-      const [before, after] = generateRemovedOnlyScenes(diff, i)
-      scenes.push(before)
-      scenes.push(after)
-      continue
-    } else if (diff[i].added === true && diff[i - 1].removed === false) {
-      const [before, after] = generateAddedOnlyScenes(diff, i)
-      scenes.push(before)
-      scenes.push(after)
-      continue
+let wholeCodeWithDiffs: string[] = []
+let lineNo = 1  // Track the current line number
+
+for (let i = 0; i < diffs.length; i++) {
+  const diff = diffs[i]
+
+  for (let i = 0; i < diff.length; i++) {
+    if (diff[i].removed === true && diff[i].added === false) {
+      let splitValue = diff[i].value.split("\n")
+      splitValue = splitValue.map(line => {
+        return line.trim() ? `-  ${lineNo++}: ${line}` : line
+      })
+      wholeCodeWithDiffs.push(splitValue.join("\n"))
+    } else if (diff[i].added === true && diff[i].removed === false) {
+      let splitValue = diff[i].value.split("\n")
+      splitValue = splitValue.map(line => {
+        return line.trim() ? `+  ${lineNo++}: ${line}` : line
+      })
+      wholeCodeWithDiffs.push(splitValue.join("\n"))
+    } else {
+      let splitValue = diff[i].value.split("\n")
+      splitValue = splitValue.map(line => {
+        return line.trim() ? `   ${lineNo++}: ${line}` : line
+      })
+      wholeCodeWithDiffs.push(splitValue.join("\n"))
     }
   }
+  
+  fs.writeFileSync(`diff_${i}.txt`, wholeCodeWithDiffs.join("\n"), "utf8")
+  
+  
+  // for (let i = 0; i < diff.length; i++) {
+  //   if (i === diff.length - 1) {
+  //     if (diff[i].removed === true && diff[i - 1].removed === false) {
+  //       const [before, after] = generateRemovedOnlyScenes(diff, i)
+  //       scenes.push(before)
+  //       scenes.push(after)
+  //       continue
+  //     } else if (diff[i].added === true && diff[i - 1].removed === false) {
+  //       const [before, after] = generateAddedOnlyScenes(diff, i)
+  //       scenes.push(before)
+  //       scenes.push(after)
+  //       continue
+  //     }
+  //   }
+  
+  //   if (i === 0) {
+  //     if (diff[i].added === true && diff[i + 1].removed === false) {
+  //       const [before, after] = generateAddedOnlyScenes(diff, i)
+  //       scenes.push(before)
+  //       scenes.push(after)
+  //       continue
+  //     }
+  
+  //     if (diff[i].removed === true && diff[i + 1].added === false) {
+  //       const [before, after] = generateRemovedOnlyScenes(diff, i)
+  //       scenes.push(before)
+  //       scenes.push(after)
+  //       continue
+  //     }
+  //   }
+  
+  //   if (diff[i].removed === true && diff[i + 1].added === false && diff[i - 1].added === false) {
+  //     const [before, after] = generateRemovedOnlyScenes(diff, i)
+  //     scenes.push(before)
+  //     scenes.push(after)
+  //     continue
+  //   }
+  
+  //   if (diff[i].added === true && diff[i + 1].removed === false && diff[i - 1].removed === false) {
+  //     const [before, after] = generateAddedOnlyScenes(diff, i)
+  //     scenes.push(before)
+  //     scenes.push(after)
+  //     continue
+  //   }
+  
+  //   if (diff[i].removed === true && diff[i + 1].added === true) {
+  //     const [before, middle, after] = generateRemovedAddedScenes(diff, i, i + 1)
+  //     scenes.push(before)
+  //     scenes.push(middle)
+  //     scenes.push(after)
+  //     continue
+  //   }
+  // }
+  
+  // let contentMd: string[] = []
+  
+  // for (let i = 0; i < scenes.length; i++) {
+  //   const step =
+  //     `## !!steps ${i}\n` +
+  //     "\n" +
+  //     `!duration ${scenes[i].duration}\n` +
+  //     "\n" +
+  //     "```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx\n" +
+  //     `${scenes[i].scene.join("\n")}\n` +
+  //     "```\n" +
+  //     "\n"
+  //   contentMd.push(step)
+  // }
+  
+  
+  // fs.writeFileSync(`content.md`, contentMd.join("\n"), "utf8")
+  // console.log("Done!")
 
-  if (i === 0) {
-    if (diff[i].added === true && diff[i + 1].removed === false) {
-      const [before, after] = generateAddedOnlyScenes(diff, i)
-      scenes.push(before)
-      scenes.push(after)
-      continue
-    }
-
-    if (diff[i].removed === true && diff[i + 1].added === false) {
-      const [before, after] = generateRemovedOnlyScenes(diff, i)
-      scenes.push(before)
-      scenes.push(after)
-      continue
-    }
-  }
-
-  if (diff[i].removed === true && diff[i + 1].added === false && diff[i - 1].added === false) {
-    const [before, after] = generateRemovedOnlyScenes(diff, i)
-    scenes.push(before)
-    scenes.push(after)
-    continue
-  }
-
-  if (diff[i].added === true && diff[i + 1].removed === false && diff[i - 1].removed === false) {
-    const [before, after] = generateAddedOnlyScenes(diff, i)
-    scenes.push(before)
-    scenes.push(after)
-    continue
-  }
-
-  if (diff[i].removed === true && diff[i + 1].added === true) {
-    const [before, middle, after] = generateRemovedAddedScenes(diff, i, i + 1)
-    scenes.push(before)
-    scenes.push(middle)
-    scenes.push(after)
-    continue
-  }
 }
 
-let contentMd: string[] = []
 
-for (let i = 0; i < scenes.length; i++) {
-  const step =
-    `## !!steps ${i}\n` +
-    "\n" +
-    `!duration ${scenes[i].duration}\n` +
-    "\n" +
-    "```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx\n" +
-    `${scenes[i].scene.join("\n")}\n` +
-    "```\n" +
-    "\n"
-  contentMd.push(step)
-}
 
-const fs = require("fs")
-fs.writeFileSync(`content.md`, contentMd.join("\n"), "utf8")
-console.log("Done!")
+

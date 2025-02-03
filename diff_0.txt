@@ -1,0 +1,333 @@
+   1: "use client";
+   2: import { setSelectedDesignDoc } from "@/store/packageCreatorSlice";
+   3: import { MDXEditorMethods } from "@mdxeditor/editor";
+   4: import Close from "@mui/icons-material/Close";
+   5: import { Checkbox, IconButton, Link } from "@mui/material";
+   6: import { useMemo, useRef } from "react";
+   7: import { useDispatch, useSelector } from "react-redux";
+   8: import MarkDownEditor from "../ui/MarkDownEditor";
+   9: import GoogleDrivePicker from "./GoogleDrivePicker";
+
+   10: export const Strength = ({
+   11:   strengths,
+   12:   editMode = false,
+   13:   onDataChange = () => {},
+   14: }: {
+   15:   strengths: any[];
+   16:   editMode: boolean;
+   17:   onDataChange: any;
+   18: }) => (
+   19:   <div
+   20:     className={`w-full border-1 ${
+   21:       editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+   22:     } rounded-xl p-4`}
+   23:   >
+   24:     <p className="text-[17px] font-semibold text-[#1A2636]">Strengths</p>
+   25:     <ul className="text-sm font-normal list-disc px-4">
+   26:       {strengths?.map((str: any, index: number) => (
+   27:         <li key={str?.strength + index}>
+   28:           <span
+   29:             contentEditable={editMode}
+   30:             className="font-semibold outline-none"
+
+-  31:             onBlur={(e) => onDataChange(index, "strength", e.target.innerText)}
+
++  32:             onBlur={(e) =>
++  33:               editMode && onDataChange(index, "strength", e.target.innerText)
++  34:             }
+
+   35:           >
+   36:             {str?.strength}
+   37:           </span>
+   38:           :{" "}
+   39:           <span
+   40:             contentEditable={editMode}
+
++  41:             dangerouslySetInnerHTML={{ __html: str?.description }}
+
+   42:             className="outline-none"
+   43:             onBlur={(e) =>
+
+-  44:               onDataChange(index, "description", e.target.innerText)
+
++  45:               editMode && onDataChange(index, "description", e.target.innerText)
+
+   46:             }
+
+-  47:           >
+-  48:             {str?.description}
+-  49:           </span>
+
++  50:           ></span>
+
+   51:         </li>
+   52:       ))}
+   53:     </ul>
+   54:   </div>
+   55: );
+
+   56: export const Opportunity = ({
+   57:   opportunities,
+   58:   editMode = false,
+   59:   onDataChange = () => {},
+   60: }: {
+   61:   opportunities: any[];
+   62:   editMode: boolean;
+   63:   onDataChange: any;
+   64: }) => (
+   65:   <div
+   66:     className={`w-full border-1 ${
+   67:       editMode ? "bg-blue-50 border-blue-100" : "border-[#C9DBE9] "
+   68:     } rounded-xl p-4`}
+   69:   >
+   70:     <p className="text-[17px] font-semibold text-[#1A2636]">Opportunities</p>
+   71:     <ul className="text-sm font-normal list-disc px-4">
+   72:       {opportunities?.map((opp: any, index: number) => (
+   73:         <li key={opp?.opportunity + index}>
+   74:           <span
+   75:             contentEditable={editMode}
+   76:             className="font-semibold outline-none"
+   77:             onBlur={(e) =>
+
+-  78:               onDataChange(index, "opportunity", e.target.innerText)
+
++  79:               editMode && onDataChange(index, "opportunity", e.target.innerText)
+
+   80:             }
+   81:           >
+   82:             {opp?.opportunity}
+   83:           </span>
+   84:           :{" "}
+   85:           <span
+
++  86:             dangerouslySetInnerHTML={{ __html: opp?.description }}
+
+   87:             contentEditable={editMode}
+   88:             className="outline-none "
+   89:             onBlur={(e) =>
+
+-  90:               onDataChange(index, "description", e.target.innerText)
+
++  91:               editMode && onDataChange(index, "description", e.target.innerText)
+
+   92:             }
+
+-  93:           >
+-  94:             {opp?.description}
+-  95:           </span>
+
++  96:           ></span>
+
+   97:         </li>
+   98:       ))}
+   99:     </ul>
+   100:   </div>
+   101: );
+
+   102: export const Artifact = ({
+   103:   viewOnly = false,
+   104:   tags = [],
+   105:   url = "",
+   106:   updatedAt = "",
+   107:   message = "",
+   108:   onCheck = () => {},
+   109:   checked = false,
+   110:   value,
+   111:   title = null,
+   112:   no = 0,
+   113:   artifactTitle = "Artifact",
+   114:   editMode = false,
+   115:   onArtifactChange = () => {},
+   116:   repoName = "",
+
++  117:   repoLink = "",
+
+   118: }: any) => {
+   119:   const editorRef = useRef<MDXEditorMethods>(null);
+   120:   useMemo(() => editorRef.current?.setMarkdown(message), [message]);
+   121:   return (
+   122:     <div className="my-2">
+   123:       <div className="flex gap-2 items-center">
+   124:         {!viewOnly && (
+   125:           <Checkbox
+   126:             value={value}
+   127:             onChange={() => onCheck(value)}
+   128:             sx={{
+   129:               "&.Mui-checked": {
+   130:                 color: "#4ED9EF",
+   131:               },
+   132:               color: "#29324166",
+   133:               padding: 0,
+   134:             }}
+   135:             checked={checked}
+   136:           />
+   137:         )}
+   138:         <p className="text-[#1A2636] text-[17px] font-semibold">
+   139:           {artifactTitle} {no && no}
+   140:         </p>
+   141:       </div>
+   142:       <div
+   143:         className={`my-2 ${
+   144:           editMode && "bg-blue-50 border-1 border-blue-100 p-3 rounded"
+   145:         } `}
+   146:       >
+   147:         {!!url && !editMode ? (
+   148:           <Link href={url} target="_blank" style={{ textDecoration: "none" }}>
+   149:             <span className="outline-none text-[#518AB9] font-semibold text-[17px] no-underline">
+   150:               {title}
+   151:             </span>
+   152:           </Link>
+   153:         ) : typeof title === "string" ? (
+   154:           <p className="text-[#518AB9] font-semibold text-[17px]">
+   155:             <span
+   156:               contentEditable={editMode}
+   157:               className="outline-none"
+
+-  158:               onBlur={(e) => onArtifactChange("title", e.target.innerText)}
+
++  159:               onBlur={(e) =>
++  160:                 editMode && onArtifactChange("title", e.target.innerText)
++  161:               }
+
+   162:             >
+   163:               {title}
+   164:             </span>
+   165:           </p>
+   166:         ) : (
+   167:           title
+   168:         )}
+
+   169:         <p>
+   170:           {!!repoName && (
+
+-  171:             <span
+-  172:               contentEditable={editMode}
+-  173:               onBlur={(e) => onArtifactChange("repo_name", e.target.innerText)}
+-  174:               className="text-sm font-medium pr-4 outline-none"
+
++  175:             <Link
++  176:               target="_blank"
++  177:               href={repoLink}
++  178:               style={{ textDecoration: "none" }}
+
+   179:             >
+
+-  180:               {repoName}
+-  181:             </span>
+
++  182:               <span
++  183:                 contentEditable={editMode}
++  184:                 onBlur={(e) =>
++  185:                   editMode && onArtifactChange("repo_name", e.target.innerText)
++  186:                 }
++  187:                 className="text-sm font-medium pr-4 outline-none"
++  188:               >
++  189:                 {repoName}
++  190:               </span>
++  191:             </Link>
+
+   192:           )}
+   193:           {!!updatedAt && (
+   194:             <span className="my-1 text-[#1A2636] text-xs italic">
+   195:               Last updated: {updatedAt}
+   196:             </span>
+   197:           )}
+   198:         </p>
+
+   199:         {message && (
+   200:           <div
+   201:             onBlur={(e) =>
+
++  202:               editMode &&
+
+   203:               onArtifactChange("message", editorRef.current?.getMarkdown())
+   204:             }
+   205:             className="text-sm text-[#1A2636] outline-none -m-3 "
+   206:           >
+   207:             <MarkDownEditor
+   208:               editorRef={editorRef}
+   209:               markdown={message}
+   210:               readOnly={!editMode}
+   211:               hideToolbar={true}
+   212:             />
+   213:           </div>
+   214:         )}
+   215:         <div className="flex gap-4 flex-wrap items-center mt-2">
+   216:           {tags.length > 0 &&
+   217:             tags.map((tag: any) => (
+   218:               <div
+   219:                 key={tag}
+   220:                 className="bg-[#C9DBE9] w-fit px-2 py-1 rounded-2xl text-[10px] text-[#1A2636] "
+   221:               >
+   222:                 {tag}
+   223:               </div>
+   224:             ))}
+   225:         </div>
+   226:       </div>
+   227:     </div>
+   228:   );
+   229: };
+
+   230: export const DesignDocumentBody = () => {
+   231:   const dispatch = useDispatch();
+   232:   const selectedDesignDoc = useSelector(
+   233:     (state: any) => state?.packageCreatorSlice?.selectedDesignDoc,
+   234:   );
+   235:   return (
+   236:     <>
+   237:       <p className="text-[17px] font-semibold text-[#1A2636]">
+   238:         Select Files from Google Drive
+   239:       </p>
+   240:       <div className="my-4">
+   241:         {selectedDesignDoc.length > 0 &&
+   242:           selectedDesignDoc.map((doc: any) => (
+   243:             <div key={doc?.id} className="flex items-center gap-5">
+   244:               <div className="h-5 w-5">
+   245:                 <img
+   246:                   src={doc?.iconUrl}
+   247:                   style={{ height: "auto", width: "100%" }}
+   248:                   alt={doc?.name}
+   249:                 />
+   250:               </div>
+   251:               <div className="flex items-center w-full justify-between">
+   252:                 <div>
+   253:                   <p className="text-sm text-[#1A2636]">{doc?.name}</p>
+   254:                   <a
+   255:                     className="text-sm text-[#518AB9]"
+   256:                     target="_blank"
+   257:                     href={doc?.url}
+   258:                   >
+   259:                     {doc?.url}
+   260:                   </a>
+   261:                 </div>
+   262:                 <IconButton
+   263:                   size="small"
+   264:                   onClick={() =>
+   265:                     dispatch(
+   266:                       setSelectedDesignDoc(
+   267:                         selectedDesignDoc.filter((i: any) => i?.id !== doc?.id),
+   268:                       ),
+   269:                     )
+   270:                   }
+   271:                 >
+   272:                   <Close fontSize="small" />
+   273:                 </IconButton>
+   274:               </div>
+   275:             </div>
+   276:           ))}
+   277:       </div>
+   278:       <GoogleDrivePicker
+   279:         onPick={(data) => {
+   280:           const newDocs = data?.docs.filter(
+   281:             (doc: any) =>
+   282:               !selectedDesignDoc.some(
+   283:                 (selectedDoc: any) => selectedDoc.id === doc.id,
+   284:               ),
+   285:           );
+   286:           dispatch(setSelectedDesignDoc([...selectedDesignDoc, ...newDocs]));
+   287:         }}
+   288:       />
+   289:     </>
+   290:   );
+   291: };
+
