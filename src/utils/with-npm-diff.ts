@@ -17,6 +17,7 @@ interface DiffOptions {
 }
 
 type DiffScene = {
+  fileName: string,
   duration: number,
   scene: string[]
 }
@@ -41,7 +42,7 @@ export function generateDiffLines(
  * @param targetIndex - Index of the change to focus on
  * @returns Tuple of [beforeScene, afterScene]
  */
-function generateRemovedOnlyScenes(diff: Change[], targetIndex: number): DiffScene[] {
+function generateRemovedOnlyScenes(diff: Change[], targetIndex: number, fileName: string): DiffScene[] {
   const beforeScene: string[] = []
   const afterScene: string[] = []
 
@@ -65,24 +66,23 @@ function generateRemovedOnlyScenes(diff: Change[], targetIndex: number): DiffSce
   const scneneGenerated = [
     {
       duration: 100,
+      fileName: fileName,
       scene: beforeScene
     },
+
     {
       duration: 200,
+      fileName: fileName,
       scene: afterScene
     }
+
   ]
 
   return scneneGenerated
 }
 
-/**
- * Generates scenes showing only added content with highlighting
- * @param diff - Array of diff changes
- * @param targetIndex - Index of the change to focus on
- * @returns Tuple of [beforeScene, afterScene]
- */
-function generateAddedOnlyScenes(diff: Change[], targetIndex: number): DiffScene[] {
+
+function generateAddedOnlyScenes(diff: Change[], targetIndex: number, fileName: string): DiffScene[] {
   const beforeScene: string[] = []
   const afterScene: string[] = []
 
@@ -112,10 +112,12 @@ function generateAddedOnlyScenes(diff: Change[], targetIndex: number): DiffScene
   const scneneGenerated = [
     {
       duration: 100,
+      fileName: fileName,
       scene: beforeScene
     },
     {
       duration: 200,
+      fileName: fileName,
       scene: afterScene
     }
   ]
@@ -123,21 +125,17 @@ function generateAddedOnlyScenes(diff: Change[], targetIndex: number): DiffScene
   return scneneGenerated
 }
 
-/**
- * Generates scenes showing both removed and added content with highlighting
- * @param diff - Array of diff changes
- * @param removedIndex - Index of the removed change
- * @param addedIndex - Index of the added change
- * @returns Tuple of [beforeScene, middleScene, afterScene]
- */
+
 function generateRemovedAddedScenes(
   diff: Change[],
   removedIndex: number,
-  addedIndex: number
+  addedIndex: number,
+  fileName: string
 ): DiffScene[] {
   const beforeScene: string[] = []
   const middleScene: string[] = []
   const afterScene: string[] = []
+
 
   // Generate before scene with highlighted removed content
   diff.forEach((entry, idx) => {
@@ -206,14 +204,17 @@ function generateRemovedAddedScenes(
   const scneneGenerated = [
     {
       duration: 150,
+      fileName: fileName,
       scene: beforeScene
     },
     {
       duration: 80,
+      fileName: fileName,
       scene: middleScene
     },
     {
       duration: 200,
+      fileName: fileName,
       scene: afterScene
     }
   ]
@@ -222,18 +223,19 @@ function generateRemovedAddedScenes(
 }
 
 
-function generateDiffScenes(startIndex: number, endIndex: number, diff: Change[]) {
+function generateDiffScenes(startIndex: number, endIndex: number, diff: Change[], fileName: string) {
   let scenes: DiffScene[] = []
 
-  for (let i = startIndex; i < endIndex; i++) {
+  for (let i = startIndex; i < endIndex + 1; i++) {
     if (i === diff.length - 1) {
       if (diff[i].removed === true && diff[i - 1].removed === false) {
-        const [before, after] = generateRemovedOnlyScenes(diff, i)
+        const [before, after] = generateRemovedOnlyScenes(diff, i, fileName)
         scenes.push(before)
         scenes.push(after)
         continue
+
       } else if (diff[i].added === true && diff[i - 1].removed === false) {
-        const [before, after] = generateAddedOnlyScenes(diff, i)
+        const [before, after] = generateAddedOnlyScenes(diff, i, fileName)
         scenes.push(before)
         scenes.push(after)
         continue
@@ -242,14 +244,14 @@ function generateDiffScenes(startIndex: number, endIndex: number, diff: Change[]
   
     if (i === 0) {
       if (diff[i].added === true && diff[i + 1].removed === false) {
-        const [before, after] = generateAddedOnlyScenes(diff, i)
+        const [before, after] = generateAddedOnlyScenes(diff, i, fileName)
         scenes.push(before)
         scenes.push(after)
         continue
       }
   
       if (diff[i].removed === true && diff[i + 1].added === false) {
-        const [before, after] = generateRemovedOnlyScenes(diff, i)
+        const [before, after] = generateRemovedOnlyScenes(diff, i, fileName)
         scenes.push(before)
         scenes.push(after)
         continue
@@ -257,21 +259,21 @@ function generateDiffScenes(startIndex: number, endIndex: number, diff: Change[]
     }
   
     if (diff[i].removed === true && diff[i + 1].added === false && diff[i - 1].added === false) {
-      const [before, after] = generateRemovedOnlyScenes(diff, i)
+      const [before, after] = generateRemovedOnlyScenes(diff, i, fileName)
       scenes.push(before)
       scenes.push(after)
       continue
     }
   
     if (diff[i].added === true && diff[i + 1].removed === false && diff[i - 1].removed === false) {
-      const [before, after] = generateAddedOnlyScenes(diff, i)
+      const [before, after] = generateAddedOnlyScenes(diff, i, fileName)
       scenes.push(before)
       scenes.push(after)
       continue
     }
   
     if (diff[i].removed === true && diff[i + 1].added === true) {
-      const [before, middle, after] = generateRemovedAddedScenes(diff, i, i + 1)
+      const [before, middle, after] = generateRemovedAddedScenes(diff, i, i + 1, fileName)
       scenes.push(before)
       scenes.push(middle)
       scenes.push(after)
@@ -388,55 +390,36 @@ async function processAndGenerateResponse() {
   const scenesToGenerate: DiffScene[] = []
 
   for(let i = 0; i < transcriptSegments.length; i++) {
-    if(transcriptSegments[i].code_reference.filename === testFileName1) {
-      let low = 0;
-      let high = 0;
-      let count = 0;
-      for (let j = 0; j < diffs[0].diff.length; j++) {
-        count += diffs[0].diff[j].count ?? 0
-        if(count >= transcriptSegments[i].code_reference.start_line) {
-          low = j;
-          break;
-        }
+    const fileDiff = diffs.find(diff => diff.fileName === transcriptSegments[i].code_reference.filename) 
+    if(!fileDiff) {
+      continue
+    }
+    let low = 0;
+    let high = 0;
+    let count = 0;
+    for (let j = 0; j < fileDiff.diff.length; j++) {
+
+      count += fileDiff.diff[j].count ?? 0
+      if(count >= transcriptSegments[i].code_reference.start_line) {
+        low = j;
+        break;
       }
-      count = 0;
-      for (let j = 0; j < diffs[0].diff.length; j++) {
-        count += diffs[0].diff[j].count ?? 0
-        if(count >= transcriptSegments[i].code_reference.end_line) {
-          high = j;
-          break;
-        }
-      }
-      const generatedScenes = generateDiffScenes(low, high, diffs[0].diff)
-      scenesToGenerate.push(...generatedScenes)
     }
 
-
-    if(transcriptSegments[i].code_reference.filename === testFileName2) {
-      let low = 0;
-      let high = 0;
-      let count = 0;
-      for (let j = 0; j < diffs[0].diff.length; j++) {
-        count += diffs[0].diff[j].count ?? 0
-        if(count >= transcriptSegments[i].code_reference.start_line) {
-          low = j;
-          break;
-        }
+    count = 0;
+    for (let j = 0; j < fileDiff.diff.length; j++) {
+      count += fileDiff.diff[j].count ?? 0
+      if(count >= transcriptSegments[i].code_reference.end_line) {
+        high = j;
+        break;
       }
-      count = 0;
-      for (let j = 0; j < diffs[0].diff.length; j++) {
-        count += diffs[0].diff[j].count ?? 0
-        if(count >= transcriptSegments[i].code_reference.end_line) {
-          high = j;
-          break;
-        }
-      }
-      const generatedScenes = generateDiffScenes(low, high, diffs[0].diff)
-      scenesToGenerate.push(...generatedScenes)
     }
+    const generatedScenes = generateDiffScenes(low, high, fileDiff.diff, fileDiff.fileName)
+    scenesToGenerate.push(...generatedScenes)
+    
   }
 
-  console.log(scenesToGenerate)
+  // console.log(scenesToGenerate)
 
 
   let contentMd: string[] = []
@@ -447,10 +430,11 @@ async function processAndGenerateResponse() {
       "\n" +
       `!duration ${scenesToGenerate[i].duration}\n` +
       "\n" +
-      "```jsx ! src/components/PackageCreator/CodeContributionDraft.tsx\n" +
+      `\`\`\`tsx ! ${scenesToGenerate[i].fileName}\n` +
       `${scenesToGenerate[i].scene.join("\n")}\n` +
       "```\n" +
       "\n"
+
     contentMd.push(step)
   }
   
