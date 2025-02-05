@@ -10,6 +10,7 @@
   "repository": {},
   "license": "UNLICENSED",
   "dependencies": {
+    "@langchain/core": "^0.3.37",
     "@mdx-js/loader": "",
     "@mdx-js/react": "",
     "@remotion/cli": "4.0.255",
@@ -21,13 +22,14 @@
     "langchain": "^0.3.15",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "remotion": "4.0.255",
+    "remotion": "4.0.259",
     "ts-node": "^10.9.2",
     "twoslash-cdn": "^0.2.9",
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@types/diff": "^7.0.0",
+    "@types/diff": "^7.0.1",
+    "@types/node": "^22.13.1",
     "prettier": "^2.8.8",
     "typescript": "^5.5.2"
   },
